@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Cadastro de Produtos - Dados Mestres</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .admin-container { max-width: 1100px; margin: 20px auto; padding: 20px; background: white; border-radius: 12px; box-shadow: var(--shadow); }
+    .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .table-responsive { overflow-x: auto; margin-top: 20px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { border: 1px solid var(--border-color); padding: 8px 10px; text-align: left; }
+    th { background-color: var(--primary-color); color: white; white-space: nowrap; }
+    .nav-link { display: inline-block; margin-bottom: 15px; color: var(--primary-color); font-weight: bold; text-decoration: none; }
+  </style>
+</head>
+<body>
+<button onclick="voltarParaValidacao()" class="btn-admin-voltar">
+  ⬅️ Voltar para Validação
+</button>
+
+
+  <div class="admin-container">
+    <a href="index.html" class="nav-link">← Voltar para Validação de SN</a>
+    <h2>Cadastro de Dados Mestres</h2>
+    <p class="subtitle">Cadastre os modelos de produtos com Download ID e Hardware NS</p>
+
+    <form id="formProduto">
+      <div class="grid-form">
+        <input type="text" id="produto" placeholder="PRODUTO *" required>
+        <input type="text" id="download_id" placeholder="DOWNLOAD ID *" required>
+        <input type="text" id="hardware_ns" placeholder="HARDWARE NS *" required>
+        <input type="text" id="nome_modelo" placeholder="NOME MODELO">
+        <input type="text" id="product_model" placeholder="PRODUCT MODEL">
+        <input type="text" id="product_no" placeholder="PRODUCT NO">
+        <input type="text" id="descricao_produto" placeholder="DESCRIÇÃO PRODUTO">
+        <input type="text" id="descricao_modelo" placeholder="DESCRIÇÃO MODELO">
+      </div>
+      <button type="submit">Cadastrar Produto</button>
+    </form>
+
+    <div id="mensagem" class="mensagem"></div>
+
+    <h3>Produtos Cadastrados</h3>
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>Chave (ID+HW)</th>
+            <th>PRODUTO</th>
+            <th>DOWNLOAD ID</th>
+            <th>HARDWARE NS</th>
+            <th>NOME MODELO</th>
+            <th>PRODUCT MODEL</th>
+            <th>PRODUCT NO</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaProdutos"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    async function carregarProdutos() {
+      const res = await fetch('/api/produtos');
+      const produtos = await res.json();
+      const tbody = document.getElementById('tabelaProdutos');
+      tbody.innerHTML = '';
+      produtos.forEach(p => {
+        tbody.innerHTML += `
+          <tr>
+            <td><b>${p.chave_busca}</b></td>
+            <td>${p.produto}</td>
+            <td>${p.download_id}</td>
+            <td>${p.hardware_ns}</td>
+            <td>${p.nome_modelo || '-'}</td>
+            <td>${p.product_model || '-'}</td>
+            <td>${p.product_no || '-'}</td>
+            <td><button onclick="deletarProduto(${p.id})" style="background:var(--error-color); padding: 4px 8px; font-size: 12px; margin:0;">Excluir</button></td>
+          </tr>
+        `;
+      });
+    }
+
+    document.getElementById('formProduto').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        produto: document.getElementById('produto').value,
+        descricao_produto: document.getElementById('descricao_produto').value,
+        nome_modelo: document.getElementById('nome_modelo').value,
+        descricao_modelo: document.getElementById('descricao_modelo').value,
+        product_model: document.getElementById('product_model').value,
+        product_no: document.getElementById('product_no').value,
+        download_id: document.getElementById('download_id').value,
+        hardware_ns: document.getElementById('hardware_ns').value
+      };
+
+      const res = await fetch('/api/produtos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        document.getElementById('formProduto').reset();
+        carregarProdutos();
+      } else {
+        alert(data.erro);
+      }
+    });
+
+    async function deletarProduto(id) {
+      if (confirm('Deseja excluir este produto?')) {
+        await fetch(`/api/produtos/${id}`, { method: 'DELETE' });
+        carregarProdutos();
+      }
+    }
+
+    carregarProdutos();
+
+    function voltarParaValidacao() {
+  window.location.href = '/';
+}
+  </script>
+</body>
+</html>

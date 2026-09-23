@@ -1,0 +1,235 @@
+/* --- CSS Variables and Global Reset --- */
+:root {
+  /* Modern and Clean Color Palette */
+  --bg-color: #f0f2f5;        /* Soft background */
+  --card-bg: #ffffff;         /* White card */
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  
+  /* Primary Accent Color (Can change to your brand color) */
+  --primary-color: #3b82f6;   /* Modern vibrant blue */
+  --primary-hover: #2563eb;   /* Darker blue on hover */
+
+  /* Validation Colors */
+  --success-color: #10b981;   /* Emerald green for success */
+  --success-bg: #ecfdf5;
+  --error-color: #ef4444;     /* Vibrant red for error */
+  --error-bg: #fef2f2;
+  --info-color: #6366f1;      /* Indigo blue for loading/info */
+  --info-bg: #eef2ff;
+
+  /* Spacing and Borders */
+  --border-color: #e5e7eb;
+  --border-radius: 12px;      /* Pronounced rounded corners for a modern feel */
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Subtle shadow */
+  --transition: all 0.3s ease; /* Smooth animations */
+}
+
+/* Global Reset for Consistency */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh; /* Centers vertically */
+  padding: 20px;
+}
+
+/* --- Main Card Container --- */
+.container {
+  background-color: var(--card-bg);
+  padding: 40px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  width: 100%;
+  max-width: 500px; /* Limits width on larger screens */
+  text-align: center;
+}
+
+/* --- Typography --- */
+h2 {
+  font-size: 24px;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: 30px;
+}
+
+/* --- Form and Inputs --- */
+#formSN {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Spacing between input fields */
+}
+
+input {
+  width: 100%;
+  padding: 15px;
+  font-size: 16px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background-color: #fff;
+  transition: var(--transition);
+}
+
+/* Focus and Active States for Inputs */
+input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); /* Subtle blue glow */
+}
+
+/* Valid Input Icon (Optional but useful) */
+input:not(:placeholder-shown):valid {
+  border-color: var(--success-color);
+}
+
+/* --- Submit Button --- */
+button {
+  width: 100%;
+  padding: 15px;
+  margin-top: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  background-color: var(--primary-color);
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+button:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px); /* Moves up slightly on hover */
+}
+
+button:active {
+  transform: translateY(1px); /* Simple push-down effect */
+}
+
+/* --- Validation Message Area --- */
+.mensagem {
+  margin-top: 25px;
+  padding: 15px;
+  border-radius: var(--border-radius);
+  font-size: 15px;
+  font-weight: 500;
+  transition: var(--transition);
+  opacity: 0; /* Hidden by default */
+  min-height: 50px; /* Prevents layout jump when shown */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Classes to trigger message display */
+.mensagem.erro, .mensagem.sucesso, .mensagem.info {
+  opacity: 1; /* Shows message */
+}
+
+/* Success Message Style */
+.mensagem.sucesso {
+  color: var(--success-color);
+  background-color: var(--success-bg);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+/* Error Message Style */
+.mensagem.erro {
+  color: var(--error-color);
+  background-color: var(--error-bg);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Loading/Info Message Style */
+.mensagem.info {
+  color: var(--info-color);
+  background-color: var(--info-bg);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.btn-admin {
+  background-color: #333;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.btn-admin:hover {
+  background-color: #555;
+}
+
+.btn-admin-topo {
+  /* Posicionamento fixado no canto superior direito */
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  
+  /* Estilização moderna e clean */
+  background-color: #333333;
+  color: #ffffff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+/* Efeito ao passar o mouse */
+.btn-admin-topo:hover {
+  background-color: #555555;
+}
+
+/* Efeito ao clicar */
+.btn-admin-topo:active {
+  transform: scale(0.97);
+}
+
+.btn-admin-voltar {
+  /* Posicionamento fixado no canto superior esquerdo */
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  
+  /* Estilização moderna e clean (combinando com o index) */
+  background-color: #4a5568; /* Um tom cinza-azulado elegante */
+  color: #ffffff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+/* Efeito ao passar o mouse */
+.btn-admin-voltar:hover {
+  background-color: #2d3748;
+}
+
+/* Efeito ao clicar */
+.btn-admin-voltar:active {
+  transform: scale(0.97);
+}

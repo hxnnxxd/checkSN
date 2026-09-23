@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Validação de SN - Controle de Lote</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .modal { 
+      display: none; 
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      width: 100%; 
+      height: 100%; 
+      background: rgba(0,0,0,0.6); 
+      justify-content: center; 
+      align-items: center; 
+      z-index: 1000;
+    }
+    .modal-content { 
+      background: white; 
+      padding: 25px; 
+      border-radius: 8px; 
+      max-width: 500px; 
+      width: 90%; 
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .opcoes-produto { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 10px; 
+      margin-top: 15px; 
+    }
+    .btn-opcao { 
+      padding: 12px; 
+      background: #2563eb; 
+      color: white; 
+      border: none; 
+      border-radius: 6px; 
+      cursor: pointer; 
+      text-align: left; 
+    }
+    .btn-opcao:hover { 
+      background: #1d4ed8; 
+    }
+    .card-lote { 
+      background: #f3f4f6; 
+      padding: 20px; 
+      border-radius: 8px; 
+      margin-bottom: 20px; 
+      border-left: 4px solid #2563eb; 
+    }
+    .campo-grupo {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 15px;
+    }
+    .campo-grupo label {
+      font-weight: bold;
+      color: #374151;
+      font-size: 0.9em;
+    }
+    .btn-modal {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      float: right;
+    }
+    .btn-modal:hover {
+      background-color: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+  <div style="text-align: center; margin-top: 20px;">
+<button onclick="acessarAdmin()" class="btn-admin-topo">
+  ⚙️ Painel Admin
+</button>
+
+</div>
+
+
+  <div class="container">
+    <h2>Check e validação de SN</h2>
+
+    <!-- SEÇÃO 1: ABERTURA DE LOTE -->
+    <div id="secaoConfigLote" class="card-lote">
+      <h3>Configuração do Lote</h3>
+      
+      <!-- E-mail em uma linha -->
+      <div class="campo-grupo" style="margin-top: 15px;">
+        <label for="emailUsuario">E-mail</label>
+        <input type="email" id="emailUsuario" placeholder="seu.email@grupomultilaser.com.br" required>
+      </div>
+
+      <!-- Quantidade e Botão na linha de baixo -->
+      <div style="display: flex; gap: 10px; align-items: flex-end;">
+        <div class="campo-grupo" style="flex: 1; margin-bottom: 0;">
+          <label for="qtdLote">Quantidade do Lote (mín. 10)</label>
+          <input type="number" id="qtdLote" placeholder="10" min="10" value="10" required>
+        </div>
+        <button id="btnIniciarLote" style="width: auto; height: 42px;">Iniciar Lote</button>
+      </div>
+    </div>
+
+    <!-- SEÇÃO 2: PAINEL DE BIPAGEM -->
+    <div id="secaoBipagem" style="display:none;">
+      <div class="card-lote">
+        <strong>Lote Ativo:</strong> <span id="infoEmail"></span> | 
+        <strong>Progresso:</strong> <span id="contadorLote">0</span> / <span id="metaLote">0</span><br>
+        <strong>Produto Selecionado:</strong> <span id="infoProdutoFixado" style="color: #2563eb;">Aguardando 1ª bipagem...</span>
+      </div>
+
+      <form id="formSN">
+        <input type="text" id="snInput" placeholder="Bipe a SN (24 caracteres)" autocomplete="off" autofocus required>
+        <button type="submit">Validar SN</button>
+      </form>
+    </div>
+
+    <div id="mensagem" class="mensagem" style="margin-top: 15px;"></div>
+  </div>
+
+  <!-- MODAL DE SELEÇÃO DE PRODUTO DUPLICADO -->
+  <div id="modalSelecao" class="modal">
+    <div class="modal-content">
+      <h3>Selecione o Produto do Lote</h3>
+      <p id="subtituloModal">Mais de um produto foi encontrado para esta chave. Escolha o produto que este lote irá validar:</p>
+      <div id="listaProdutos" class="opcoes-produto"></div>
+    </div>
+  </div>
+
+  <!-- MODAL GENÉRICO DE AVISO / MENSAGEM -->
+  <div id="modalAviso" class="modal">
+    <div class="modal-content">
+      <h3 id="tituloAviso">Aviso</h3>
+      <p id="textoAviso" style="margin-top: 10px; color: #374151;"></p>
+      <button id="btnFecharAviso" class="btn-modal">OK</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
