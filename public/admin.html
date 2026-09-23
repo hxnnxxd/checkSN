@@ -13,35 +13,9 @@
     th { background-color: var(--primary-color); color: white; white-space: nowrap; }
     .nav-link { display: inline-block; margin-bottom: 15px; color: var(--primary-color); font-weight: bold; text-decoration: none; }
     
-    /* Estilo do botão de voltar posicionado no topo esquerdo */
-    .btn-admin-voltar {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      background-color: #4a5568;
-      color: #ffffff;
-      font-family: 'Segoe UI', sans-serif;
-      font-size: 14px;
-      font-weight: 600;
-      padding: 10px 18px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      transition: background-color 0.2s ease, transform 0.1s ease;
-    }
-    .btn-admin-voltar:hover { background-color: #2d3748; }
-    .btn-admin-voltar:active { transform: scale(0.97); }
-    
-    /* Espaçamento inicial para o container não sumir atrás do botão absoluto */
-    body { padding-top: 40px; }
   </style>
 </head>
 <body>
-
-<button onclick="voltarParaValidacao()" class="btn-admin-voltar">
-  ⬅️ Voltar para Validação
-</button>
 
 <div class="admin-container">
   <a href="index.html" class="nav-link">← Voltar para Validação de SN</a>
