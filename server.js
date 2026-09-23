@@ -282,3 +282,19 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
 });
+
+// =======================================================
+// ROTA DO HISTÓRICO DE SNS VALIDADAS (PAINEL ADMIN)
+// =======================================================
+app.get('/api/historico-sns', verificarSenhaAPI, async (req, res) => {
+  try {
+    // Busca as SNs validadas trazendo as mais recentes primeiro
+    const [rows] = await pool.query(
+      "SELECT id, sn, usuario, DATE_FORMAT(data_validacao, '%d/%m/%Y %H:%i:%s') AS data FROM check_sns ORDER BY id DESC"
+    );
+    res.json(rows);
+  } catch (error) {
+    console.error("Erro ao buscar histórico de SNs:", error);
+    res.status(500).json({ erro: "Erro ao buscar histórico no banco." });
+  }
+});

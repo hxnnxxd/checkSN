@@ -6,7 +6,7 @@
   --text-primary: #333333;
   --text-secondary: #666666;
   
-  /* Primary Accent Color (Can change to your brand color) */
+  /* Primary Accent Color */
   --primary-color: #3b82f6;   /* Modern vibrant blue */
   --primary-hover: #2563eb;   /* Darker blue on hover */
 
@@ -20,9 +20,9 @@
 
   /* Spacing and Borders */
   --border-color: #e5e7eb;
-  --border-radius: 12px;      /* Pronounced rounded corners for a modern feel */
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Subtle shadow */
-  --transition: all 0.3s ease; /* Smooth animations */
+  --border-radius: 12px;      
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); 
+  --transition: all 0.3s ease; 
 }
 
 /* Global Reset for Consistency */
@@ -36,21 +36,26 @@ body {
   font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   background-color: var(--bg-color);
   color: var(--text-primary);
+  padding: 20px;
+  min-height: 100vh;
+}
+
+/* CORREÇÃO: Aplica a centralização em bloco apenas na tela de validação (index), 
+   evitando destruir o topo e as tabelas da tela Admin */
+body:has(.container) {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh; /* Centers vertically */
-  padding: 20px;
 }
 
-/* --- Main Card Container --- */
+/* --- Main Card Container (Index) --- */
 .container {
   background-color: var(--card-bg);
   padding: 40px;
   border-radius: var(--border-radius);
   box-shadow: var(--shadow);
   width: 100%;
-  max-width: 500px; /* Limits width on larger screens */
+  max-width: 500px; 
   text-align: center;
 }
 
@@ -68,10 +73,10 @@ h2 {
 }
 
 /* --- Form and Inputs --- */
-#formSN {
+#formSN, #formProduto {
   display: flex;
   flex-direction: column;
-  gap: 15px; /* Spacing between input fields */
+  gap: 15px; 
 }
 
 input {
@@ -84,21 +89,18 @@ input {
   transition: var(--transition);
 }
 
-/* Focus and Active States for Inputs */
 input:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); /* Subtle blue glow */
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); 
 }
 
-/* Valid Input Icon (Optional but useful) */
 input:not(:placeholder-shown):valid {
   border-color: var(--success-color);
 }
 
-/* --- Submit Button --- */
+/* --- Submit Buttons (Base de Botão Padrão) --- */
 button {
-  width: 100%;
   padding: 15px;
   margin-top: 10px;
   font-size: 16px;
@@ -111,13 +113,18 @@ button {
   transition: var(--transition);
 }
 
+/* CORREÇÃO: Força o 100% de largura apenas nos botões de formulário principal */
+#formSN button, #formProduto button {
+  width: 100%;
+}
+
 button:hover {
   background-color: var(--primary-hover);
-  transform: translateY(-1px); /* Moves up slightly on hover */
+  transform: translateY(-1px); 
 }
 
 button:active {
-  transform: translateY(1px); /* Simple push-down effect */
+  transform: translateY(1px); 
 }
 
 /* --- Validation Message Area --- */
@@ -128,39 +135,36 @@ button:active {
   font-size: 15px;
   font-weight: 500;
   transition: var(--transition);
-  opacity: 0; /* Hidden by default */
-  min-height: 50px; /* Prevents layout jump when shown */
+  opacity: 0; 
+  min-height: 50px; 
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Classes to trigger message display */
 .mensagem.erro, .mensagem.sucesso, .mensagem.info {
-  opacity: 1; /* Shows message */
+  opacity: 1; 
 }
 
-/* Success Message Style */
 .mensagem.sucesso {
   color: var(--success-color);
   background-color: var(--success-bg);
   border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
-/* Error Message Style */
 .mensagem.erro {
   color: var(--error-color);
   background-color: var(--error-bg);
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
-/* Loading/Info Message Style */
 .mensagem.info {
   color: var(--info-color);
   background-color: var(--info-bg);
   border: 1px solid rgba(99, 102, 241, 0.3);
 }
 
+/* --- Botões Administrativos Customizados --- */
 .btn-admin {
   background-color: #333;
   color: white;
@@ -175,15 +179,13 @@ button:active {
 }
 
 .btn-admin-topo {
-  /* Posicionamento fixado no canto superior direito */
   position: absolute;
   top: 20px;
   right: 20px;
-  
-  /* Estilização moderna e clean */
+  width: auto; /* CORREÇÃO: Garante o tamanho compacto do botão */
   background-color: #333333;
   color: #ffffff;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   font-size: 14px;
   font-weight: 600;
   padding: 10px 18px;
@@ -193,27 +195,17 @@ button:active {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   transition: background-color 0.2s ease, transform 0.1s ease;
 }
-
-/* Efeito ao passar o mouse */
-.btn-admin-topo:hover {
-  background-color: #555555;
-}
-
-/* Efeito ao clicar */
-.btn-admin-topo:active {
-  transform: scale(0.97);
-}
+.btn-admin-topo:hover { background-color: #555555; }
+.btn-admin-topo:active { transform: scale(0.97); }
 
 .btn-admin-voltar {
-  /* Posicionamento fixado no canto superior esquerdo */
   position: absolute;
   top: 20px;
   left: 20px;
-  
-  /* Estilização moderna e clean (combinando com o index) */
-  background-color: #4a5568; /* Um tom cinza-azulado elegante */
+  width: auto; /* CORREÇÃO: Garante o tamanho compacto do botão */
+  background-color: #4a5568; 
   color: #ffffff;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   font-size: 14px;
   font-weight: 600;
   padding: 10px 18px;
@@ -223,13 +215,26 @@ button:active {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   transition: background-color 0.2s ease, transform 0.1s ease;
 }
+.btn-admin-voltar:hover { background-color: #2d3748; }
+.btn-admin-voltar:active { transform: scale(0.97); }
 
-/* Efeito ao passar o mouse */
-.btn-admin-voltar:hover {
-  background-color: #2d3748;
+/* --- Ajustes das Janelas Flutuantes (Modais) --- */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px); /* Suaviza o fundo dando um efeito moderno de vidro fosco */
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
 }
 
-/* Efeito ao clicar */
-.btn-admin-voltar:active {
-  transform: scale(0.97);
+.modal-content h3 {
+  color: var(--text-primary);
+  font-size: 20px;
+  font-weight: 600;
 }
