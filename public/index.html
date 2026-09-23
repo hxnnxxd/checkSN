@@ -5,7 +5,7 @@
   <title>Validação de SN - Controle de Lote</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    /* Estilo do botão de Admin no topo direito */
+    /* Botão de Admin no topo direito */
     .btn-admin-topo {
       position: absolute;
       top: 20px;
@@ -108,6 +108,22 @@
     .btn-modal-cancelar:hover {
       background-color: #d1d5db;
     }
+
+    /* Estilo customizado para o botão de Cancelar Lote */
+    .btn-cancelar-lote {
+      background-color: #dc2626;
+      color: white;
+      font-size: 13px;
+      font-weight: bold;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 10px;
+      width: auto;
+    }
+    .btn-cancelar-lote:hover { background-color: #b91c1c; }
   </style>
 </head>
 <body>
@@ -140,10 +156,13 @@
 
     <!-- SEÇÃO 2: PAINEL DE BIPAGEM -->
     <div id="secaoBipagem" style="display:none;">
-      <div class="card-lote">
+      <div class="card-lote" style="position: relative;">
         <strong>Lote Ativo:</strong> <span id="infoEmail"></span> | 
         <strong>Progresso:</strong> <span id="contadorLote">0</span> / <span id="metaLote">0</span><br>
         <strong>Produto Selecionado:</strong> <span id="infoProdutoFixado" style="color: #2563eb;">Aguardando 1ª bipagem...</span>
+        <br>
+        <!-- NOVO BOTÃO DE CANCELAR LOTE -->
+        <button onclick="cancelarLoteAtivo()" class="btn-cancelar-lote">❌ Cancelar Lote</button>
       </div>
 
       <form id="formSN">
@@ -155,7 +174,7 @@
     <div id="mensagem" class="mensagem" style="margin-top: 15px;"></div>
   </div>
 
-  <!-- NOVO MODAL CUSTOMIZADO PARA PEDIR A SENHA ADMIN -->
+  <!-- MODAL CUSTOMIZADO PARA PEDIR A SENHA ADMIN -->
   <div id="modalSenhaAdmin" class="modal">
     <div class="modal-content">
       <h3 style="margin-bottom: 10px;">🔐 Acesso Restrito</h3>
@@ -190,15 +209,13 @@
     </div>
   </div>
 
-  <!-- Funções visuais da nova Janela Modal -->
   <script>
     function abrirModalSenha() {
       const modal = document.getElementById('modalSenhaAdmin');
       const input = document.getElementById('inputSenhaAdmin');
-      modal.display = 'flex'; // Exibe o modal centralizado
       modal.style.display = 'flex';
-      input.value = ''; // Limpa o campo anterior
-      setTimeout(() => input.focus(), 100); // Foca automaticamente no campo de senha
+      input.value = ''; 
+      setTimeout(() => input.focus(), 100); 
     }
 
     function fecharModalSenha() {
@@ -215,10 +232,38 @@
       }
     }
 
-    // Permite que o administrador aperte 'Enter' no teclado para enviar a senha
     function verificarTeclaSenha(event) {
       if (event.key === 'Enter') {
         confirmarSenhaAdmin();
+      }
+    }
+
+    // NOVA FUNÇÃO: Reseta o lote atual e volta para a tela de configuração inicial
+    function cancelarLoteAtivo() {
+      if (confirm("Tem certeza que deseja cancelar o lote ativo? O progresso atual da tela será reiniciado.")) {
+        // Esconde o painel de bipagem e mostra o painel de configuração novamente
+        document.getElementById('secaoBipagem').style.display = 'none';
+        document.getElementById('secaoConfigLote').style.display = 'block';
+        
+        // Limpa o campo de mensagem
+        const msgDiv = document.getElementById('mensagem');
+        if (msgDiv) {
+          msgDiv.innerHTML = '';
+          msgDiv.className = 'mensagem';
+        }
+
+        // Se o seu script.js controlar variáveis globais na memória, 
+        // a melhor forma de garantir que elas limpem é resetando os elementos visuais
+        document.getElementById('contadorLote').innerText = '0';
+        document.getElementById('infoProdutoFixado').innerText = 'Aguardando 1ª bipagem...';
+        document.getElementById('snInput').value = '';
+
+        // Tenta chamar o reset de lote de dentro do script.js se ele existir
+        // Caso seu script guarde o estado em variáveis como 'loteAtivo = false', 
+        // recarregar parcialmente ou redefinir pelo script.js seria ideal.
+        if (typeof inicializarVariaveisLote === "function") {
+          inicializarVariaveisLote();
+        }
       }
     }
   </script>
