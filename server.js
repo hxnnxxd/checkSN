@@ -13,17 +13,22 @@ app.use(cors());
 // =======================================================
 // ROTA PROTEGIDA PARA ACESSAR O ADMIN.HTML
 // =======================================================
+// Remove a checagem por query string.
+// Servir a página sem a senha exposta na URL:
 app.get('/admin.html', (req, res) => {
-  const senhaInformada = req.query.senha;
-  const senhaCorreta = process.env.ADMIN_PASSWORD || ''; // 'admin123' é o padrão local caso não configure na Render
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
 
-  if (senhaInformada === senhaCorreta) {
-    // Se a senha estiver correta via query string, entrega o arquivo HTML
-    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
-  } else {
-    // Caso contrário, bloqueia o acesso
-    res.status(403).send('<h1 style="color:red; text-align:center; margin-top:50px;">❌ Acesso Negado: Senha incorreta ou não fornecida.</h1>');
+// Endpoint de login seguro via POST
+app.post('/api/login', (req, res) => {
+  const { senha } = req.body; // Captura do body, sem expor na URL
+  const senhaCorreta = process.env.ADMIN_PASSWORD || 'admin123';
+
+  if (senha === senhaCorreta) {
+    return res.json({ sucesso: true, token: senhaCorreta }); // Ou retorne um JWT
   }
+
+  return res.status(401).json({ erro: 'Senha incorreta.' });
 });
 
 // Servir arquivos estáticos da pasta public (O Express pula o admin.html por causa da rota acima)
@@ -296,5 +301,20 @@ app.get('/api/historico-sns', verificarSenhaAPI, async (req, res) => {
   } catch (error) {
     console.error("Erro ao buscar histórico de SNs:", error);
     res.status(500).json({ erro: "Erro ao buscar histórico no banco." });
+  }
+});
+
+// =======================================================
+// ROTA DO HISTÓRICO DE LOGS DE ERROS (PAINEL ADMIN)
+// =======================================================
+app.get('/api/logs-erros', verificarSenhaAPI, async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      "SELECT id, sn, motivo, usuario, DATE_FORMAT(data_erro, '%d/%m/%Y %H:%i:%s') AS data FROM logs_erros ORDER BY id DESC"
+    );
+    res.json(rows);
+  } catch (error) {
+    console.error("Erro ao buscar logs de erros:", error);
+    res.status(500).json({ erro: "Erro ao buscar logs no banco." });
   }
 });
