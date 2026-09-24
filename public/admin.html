@@ -5,14 +5,62 @@
   <title>Cadastro de Produtos - Dados Mestres</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    .admin-container { max-width: 1100px; margin: 20px auto; padding: 20px; background: white; border-radius: 12px; box-shadow: var(--shadow); }
-    .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 20px; }
-    .table-responsive { overflow-x: auto; margin-top: 20px; margin-bottom: 30px; }
-    table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    th, td { border: 1px solid var(--border-color); padding: 8px 10px; text-align: left; }
-    th { background-color: var(--primary-color); color: white; white-space: nowrap; }
-    .nav-link { display: inline-block; margin-bottom: 15px; color: var(--primary-color); font-weight: bold; text-decoration: none; }
-    
+    .admin-container { 
+      max-width: 1100px; 
+      margin: 20px auto; 
+      padding: 20px; 
+      background: white; 
+      border-radius: 12px; 
+      box-shadow: var(--shadow, 0 4px 6px rgba(0,0,0,0.1)); 
+    }
+    .grid-form { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+      gap: 12px; 
+      margin-bottom: 20px; 
+    }
+    .table-responsive { 
+      overflow-x: auto; 
+      margin-top: 15px; 
+      margin-bottom: 30px; 
+    }
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      font-size: 14px; 
+    }
+    th, td { 
+      border: 1px solid #e2e8f0; 
+      padding: 10px; 
+      text-align: left; 
+    }
+    th { 
+      background-color: #4299e1; 
+      color: white; 
+      white-space: nowrap; 
+    }
+    .nav-link { 
+      display: inline-block; 
+      margin-bottom: 15px; 
+      color: var(--primary-color, #3182ce); 
+      font-weight: bold; 
+      text-decoration: none; 
+    }
+    .card-header-flex {
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      margin-bottom: 10px;
+    }
+    .btn-atualizar {
+      background: #4a5568; 
+      color: white; 
+      border: none; 
+      padding: 8px 12px; 
+      border-radius: 4px; 
+      cursor: pointer; 
+      font-size: 13px;
+    }
   </style>
 </head>
 <body>
@@ -20,8 +68,9 @@
 <div class="admin-container">
   <a href="index.html" class="nav-link">← Voltar para Validação de SN</a>
   <h2>Cadastro de Dados Mestres</h2>
-  <p class="subtitle">Cadastre os modelos de produtos com Download ID e Hardware NS</p>
+  <p class="subtitle" style="color: #718096; margin-bottom: 20px;">Cadastre os modelos de produtos com Download ID e Hardware NS</p>
 
+  <!-- FORMULÁRIO DE CADASTRO -->
   <form id="formProduto">
     <div class="grid-form">
       <input type="text" id="produto" placeholder="PRODUTO *" required>
@@ -33,12 +82,13 @@
       <input type="text" id="descricao_produto" placeholder="DESCRIÇÃO PRODUTO">
       <input type="text" id="descricao_modelo" placeholder="DESCRIÇÃO MODELO">
     </div>
-    <button type="submit">Cadastrar Produto</button>
+    <button type="submit" style="padding: 10px 20px; background: #3182ce; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Cadastrar Produto</button>
   </form>
 
   <div id="mensagem" class="mensagem"></div>
 
-  <h3>Produtos Cadastrados</h3>
+  <!-- TABELA DE PRODUTOS CADASTRADOS -->
+  <h3 style="margin-top: 40px; color: #2d3748;">Produtos Cadastrados</h3>
   <div class="table-responsive">
     <table>
       <thead>
@@ -57,59 +107,68 @@
     </table>
   </div>
 
-  <!-- SEÇÃO DE HISTÓRICO INTEGRADA -->
-  <div class="secao-historico" style="margin-top: 50px; padding-top: 20px; border-top: 2px dashed var(--border-color);">
-    <h2>📋 Histórico de SNs Validadas</h2>
-    <button onclick="carregarHistorico()" class="btn-atualizar" style="margin-bottom: 15px; padding: 8px 12px; background: #4a5568; color: white; border: none; border-radius: 4px; cursor: pointer;">🔄 Atualizar Lista</button>
+  <!-- TABELA DE HISTÓRICO DE SNS -->
+  <div class="secao-historico" style="margin-top: 40px; padding-top: 20px; border-top: 2px dashed #e2e8f0;">
+    <div class="card-header-flex">
+      <h3 style="color: #2d3748; margin: 0;">📋 Histórico de SNs Validadas</h3>
+      <button onclick="carregarHistorico()" class="btn-atualizar">🔄 Atualizar Lista</button>
+    </div>
     
     <div class="table-responsive">
       <table>
         <thead>
-          <tr style="background-color: #f7fafc; text-align: left;">
-            <th style="padding: 12px;">ID</th>
-            <th style="padding: 12px;">Número de Série (SN)</th>
-            <th style="padding: 12px;">Usuário / E-mail</th>
-            <th style="padding: 12px;">Data da Validação</th>
+          <tr>
+            <th>ID</th>
+            <th>Número de Série (SN)</th>
+            <th>Usuário / E-mail</th>
+            <th>Data da Validação</th>
           </tr>
         </thead>
         <tbody id="tabela-historico-corpo"></tbody>
       </table>
     </div>
   </div>
+
+  <!-- TABELA DE LOGS DE ERRO DE VALIDAÇÃO -->
+  <div class="secao-logs" style="margin-top: 40px; padding-top: 20px; border-top: 2px dashed #e2e8f0;">
+    <div class="card-header-flex">
+      <h3 style="color: #2d3748; margin: 0;">⚠️ Logs de Erros de Validação</h3>
+      <button onclick="carregarLogsErros()" class="btn-atualizar">🔄 Atualizar Logs</button>
+    </div>
+
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>SN Tentada</th>
+            <th>Motivo do Erro</th>
+            <th>Usuário</th>
+            <th>Data/Hora</th>
+          </tr>
+        </thead>
+        <tbody id="tabela-logs-corpo"></tbody>
+      </table>
+    </div>
+  </div>
+
 </div>
 
-<section style="margin-top: 30px;">
-  <h2>Logs de Erros de Validação</h2>
-  <div style="overflow-x: auto;">
-    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-      <thead>
-        <tr style="background-color: #f7fafc; border-bottom: 2px solid #edf2f7; text-align: left;">
-          <th style="padding: 12px;">ID</th>
-          <th style="padding: 12px;">SN Tentada</th>
-          <th style="padding: 12px;">Motivo do Erro</th>
-          <th style="padding: 12px;">Usuário</th>
-          <th style="padding: 12px;">Data/Hora</th>
-        </tr>
-      </thead>
-      <tbody id="tabela-logs-corpo">
-        <!-- Preenchido via JavaScript -->
-      </tbody>
-    </table>
-  </div>
-</section>
-
 <script>
-// Substitui a leitura da URL pelo sessionStorage
+// Limpa parâmetros de senha visíveis na URL caso existam
+if (window.location.search.includes('senha=')) {
+  window.history.replaceState({}, document.title, window.location.pathname);
+}
+
 let senhaAdmin = sessionStorage.getItem('adminPassword');
 
-// Função para solicitar e validar a senha no backend
+// Função centralizada para autenticação
 async function solicitarSenha() {
   if (!senhaAdmin) {
     senhaAdmin = prompt("Digite a senha de administrador:");
   }
 
   if (!senhaAdmin) {
-    alert("Acesso negado. É necessária uma senha.");
     return false;
   }
 
@@ -136,31 +195,37 @@ async function solicitarSenha() {
   }
 }
 
+// 1. Carregar Produtos
 async function carregarProdutos() {
-  const res = await fetch('/api/produtos');
-  const produtos = await res.json();
-  const tbody = document.getElementById('tabelaProdutos');
-  if (!tbody) return;
+  try {
+    const res = await fetch('/api/produtos');
+    const produtos = await res.json();
+    const tbody = document.getElementById('tabelaProdutos');
+    if (!tbody) return;
 
-  tbody.innerHTML = '';
-  produtos.forEach(p => {
-    const chaveCalculada = p.download_id + p.hardware_ns;
-    
-    tbody.innerHTML += `
-      <tr>
-        <td><b>${chaveCalculada}</b></td>
-        <td>${p.produto}</td>
-        <td>${p.download_id}</td>
-        <td>${p.hardware_ns}</td>
-        <td>${p.nome_modelo || '-'}</td>
-        <td>${p.product_model || '-'}</td>
-        <td>${p.product_no || '-'}</td>
-        <td><button onclick="deletarProduto(${p.id})" style="background:var(--error-color); padding: 4px 8px; font-size: 12px; margin:0; cursor:pointer;">Excluir</button></td>
-      </tr>
-    `;
-  });
+    tbody.innerHTML = '';
+    produtos.forEach(p => {
+      const chaveCalculada = p.download_id + p.hardware_ns;
+      
+      tbody.innerHTML += `
+        <tr>
+          <td><b>${chaveCalculada}</b></td>
+          <td>${p.produto}</td>
+          <td>${p.download_id}</td>
+          <td>${p.hardware_ns}</td>
+          <td>${p.nome_modelo || '-'}</td>
+          <td>${p.product_model || '-'}</td>
+          <td>${p.product_no || '-'}</td>
+          <td><button onclick="deletarProduto(${p.id})" style="background:#e53e3e; color:white; border:none; border-radius:3px; padding: 4px 8px; font-size: 12px; cursor:pointer;">Excluir</button></td>
+        </tr>
+      `;
+    });
+  } catch (error) {
+    console.error("Erro ao carregar produtos:", error);
+  }
 }
 
+// Cadastrar Produto
 document.getElementById('formProduto').addEventListener('submit', async (e) => {
   e.preventDefault();
   
@@ -200,6 +265,7 @@ document.getElementById('formProduto').addEventListener('submit', async (e) => {
   }
 });
 
+// Excluir Produto
 async function deletarProduto(id) {
   if (confirm('Deseja excluir este produto?')) {
     if (!senhaAdmin && !(await solicitarSenha())) return;
@@ -224,10 +290,7 @@ async function deletarProduto(id) {
   }
 }
 
-function voltarParaValidacao() {
-  window.location.href = '/';
-}
-
+// 2. Carregar Histórico
 async function carregarHistorico() {
   const tabelaCorpo = document.getElementById("tabela-historico-corpo");
   if (!tabelaCorpo) return;
@@ -242,9 +305,7 @@ async function carregarHistorico() {
 
     const res = await fetch('/api/historico-sns', {
       method: 'GET',
-      headers: {
-        'x-admin-password': senhaAdmin
-      }
+      headers: { 'x-admin-password': senhaAdmin }
     });
 
     if (!res.ok) {
@@ -265,13 +326,11 @@ async function carregarHistorico() {
 
     dados.forEach(item => {
       const linha = document.createElement("tr");
-      linha.style.borderBottom = "1px solid #edf2f7";
-      
       linha.innerHTML = `
-        <td style="padding: 12px; color: #4a5568;">${item.id}</td>
-        <td style="padding: 12px; font-family: monospace; font-weight: bold; color: #2d3748;">${item.sn}</td>
-        <td style="padding: 12px; color: #4a5568;">${item.usuario}</td>
-        <td style="padding: 12px; color: #718096;">${item.data}</td>
+        <td style="color: #4a5568;">${item.id}</td>
+        <td style="font-family: monospace; font-weight: bold; color: #2d3748;">${item.sn}</td>
+        <td style="color: #4a5568;">${item.usuario}</td>
+        <td style="color: #718096;">${item.data}</td>
       `;
       tabelaCorpo.appendChild(linha);
     });
@@ -282,17 +341,7 @@ async function carregarHistorico() {
   }
 }
 
-// Inicialização ao carregar a página
-document.addEventListener("DOMContentLoaded", async () => {
-  carregarProdutos(); // Carrega produtos públicos
-  
-  // Tenta autenticar/pedir senha ao entrar no painel
-  const autenticado = await solicitarSenha();
-  if (autenticado) {
-    carregarHistorico();
-  }
-});
-
+// 3. Carregar Logs de Erro
 async function carregarLogsErros() {
   const tabelaCorpo = document.getElementById("tabela-logs-corpo");
   if (!tabelaCorpo) return;
@@ -303,13 +352,11 @@ async function carregarLogsErros() {
   }
 
   try {
-    tabelaCorpo.innerHTML = "<tr><td colspan='5' style='padding: 12px; text-align: center;'>Carregando logs...</td></tr>";
+    tabelaCorpo.innerHTML = "<tr><td colspan='5' style='padding: 12px; text-align: center;'>Carregando logs de erro...</td></tr>";
 
     const res = await fetch('/api/logs-erros', {
       method: 'GET',
-      headers: {
-        'x-admin-password': senhaAdmin
-      }
+      headers: { 'x-admin-password': senhaAdmin }
     });
 
     if (!res.ok) {
@@ -330,14 +377,12 @@ async function carregarLogsErros() {
 
     dados.forEach(item => {
       const linha = document.createElement("tr");
-      linha.style.borderBottom = "1px solid #edf2f7";
-      
       linha.innerHTML = `
-        <td style="padding: 12px; color: #4a5568;">${item.id}</td>
-        <td style="padding: 12px; font-family: monospace; font-weight: bold; color: #e53e3e;">${item.sn}</td>
-        <td style="padding: 12px; color: #c53030; font-weight: 500;">${item.motivo}</td>
-        <td style="padding: 12px; color: #4a5568;">${item.usuario}</td>
-        <td style="padding: 12px; color: #718096;">${item.data}</td>
+        <td style="color: #4a5568;">${item.id}</td>
+        <td style="font-family: monospace; font-weight: bold; color: #e53e3e;">${item.sn}</td>
+        <td style="color: #c53030; font-weight: 500;">${item.motivo}</td>
+        <td style="color: #4a5568;">${item.usuario}</td>
+        <td style="color: #718096;">${item.data}</td>
       `;
       tabelaCorpo.appendChild(linha);
     });
@@ -348,16 +393,17 @@ async function carregarLogsErros() {
   }
 }
 
-// Atualize seu DOMContentLoaded para carregar os logs também:
+// Inicialização Unificada
 document.addEventListener("DOMContentLoaded", async () => {
-  carregarProdutos();
+  carregarProdutos(); // Carrega produtos cadastrados
   
   const autenticado = await solicitarSenha();
   if (autenticado) {
     carregarHistorico();
-    carregarLogsErros(); // <-- Chamada para carregar os erros
+    carregarLogsErros();
   }
 });
 </script>
+
 </body>
 </html>

@@ -6,35 +6,36 @@ require('dotenv').config();
 
 const app = express();
 
-// Middlewares
+// Middlewares Globais
 app.use(express.json());
 app.use(cors());
 
 // =======================================================
-// ROTA PROTEGIDA PARA ACESSAR O ADMIN.HTML
+// ROTAS DE AUTENTICAÇÃO E NAVEGAÇÃO DO ADMIN
 // =======================================================
-// Remove a checagem por query string.
-// Servir a página sem a senha exposta na URL:
-app.get('/admin.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
-});
 
-// Endpoint de login seguro via POST
+// 1. Endpoint de validação de login via POST (Seguro)
 app.post('/api/login', (req, res) => {
-  const { senha } = req.body; // Captura do body, sem expor na URL
+  const { senha } = req.body;
   const senhaCorreta = process.env.ADMIN_PASSWORD || 'admin123';
 
-  if (senha === senhaCorreta) {
-    return res.json({ sucesso: true, token: senhaCorreta }); // Ou retorne um JWT
+  if (senha && senha === senhaCorreta) {
+    return res.json({ sucesso: true });
   }
 
   return res.status(401).json({ erro: 'Senha incorreta.' });
 });
 
-// Servir arquivos estáticos da pasta public (O Express pula o admin.html por causa da rota acima)
+// 2. Entrega a página admin.html sem expor parâmetros na URL
+app.get('/admin.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+// Servir arquivos estáticos da pasta public
+// (Colocado APÓS as rotas explícitas para garantir o controle)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Configuração do Pool de Conexões do MySQL (Adaptado para Local e Nuvem)
+// Configuração do Pool de Conexões do MySQL
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   port: process.env.DB_PORT || 3306,
@@ -70,15 +71,15 @@ async function registrarErroBD(sn, motivo, usuario) {
   }
 }
 
-// MIDDLEWARE: Proteção para as APIs de gravação/exclusão do Admin
+// MIDDLEWARE: Proteção para as APIs administrativas
 const verificarSenhaAPI = (req, res, next) => {
   const senhaInformada = req.headers['x-admin-password'];
   const senhaCorreta = process.env.ADMIN_PASSWORD || 'admin123';
 
-  if (senhaInformada === senhaCorreta) {
+  if (senhaInformada && senhaInformada === senhaCorreta) {
     next(); // Senha confere, avança para a rota desejada
   } else {
-    res.status(401).json({ erro: 'Não autorizado: Senha administrativa inválida.' });
+    res.status(401).json({ erro: 'Não autorizado: Senha administrativa inválida ou não fornecida.' });
   }
 };
 
@@ -193,7 +194,7 @@ app.post('/api/validar-sn', async (req, res) => {
 // ROTAS DE GESTÃO DE PRODUTOS / DADOS MESTRES
 // =======================================================
 
-// 1. Listar todos os produtos (Livre para carregar na listagem)
+// 1. Listar todos os produtos
 app.get('/api/produtos', async (req, res) => {
   try {
     const [rows] = await pool.query("SELECT * FROM produtos ORDER BY id DESC");
@@ -282,18 +283,13 @@ app.delete('/api/produtos/:id', verificarSenhaAPI, async (req, res) => {
   }
 });
 
-// Inicialização estável da porta do servidor para a Render
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando na porta ${PORT}`);
-});
+// =======================================================
+// ROTAS DE HISTÓRICO E LOGS (PAINEL ADMIN)
+// =======================================================
 
-// =======================================================
-// ROTA DO HISTÓRICO DE SNS VALIDADAS (PAINEL ADMIN)
-// =======================================================
+// Histórico de SNs Validadas (Protegido por senha)
 app.get('/api/historico-sns', verificarSenhaAPI, async (req, res) => {
   try {
-    // Busca as SNs validadas trazendo as mais recentes primeiro
     const [rows] = await pool.query(
       "SELECT id, sn, usuario, DATE_FORMAT(data_validacao, '%d/%m/%Y %H:%i:%s') AS data FROM check_sns ORDER BY id DESC"
     );
@@ -304,9 +300,7 @@ app.get('/api/historico-sns', verificarSenhaAPI, async (req, res) => {
   }
 });
 
-// =======================================================
-// ROTA DO HISTÓRICO DE LOGS DE ERROS (PAINEL ADMIN)
-// =======================================================
+// Histórico de Logs de Erros (Protegido por senha)
 app.get('/api/logs-erros', verificarSenhaAPI, async (req, res) => {
   try {
     const [rows] = await pool.query(
@@ -317,4 +311,10 @@ app.get('/api/logs-erros', verificarSenhaAPI, async (req, res) => {
     console.error("Erro ao buscar logs de erros:", error);
     res.status(500).json({ erro: "Erro ao buscar logs no banco." });
   }
+});
+
+// Inicialização do Servidor
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
 });
