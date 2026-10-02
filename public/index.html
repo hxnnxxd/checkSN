@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>Validação de SN - Controle de Lote</title>
+
+  <!-- FAVICON (Ícone de Check verde na aba do navegador) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✅</text></svg>">
+
   <link rel="stylesheet" href="style.css">
   <style>
     /* Botão Admin */
@@ -64,13 +68,13 @@
     }
     .btn-cancelar-lote:hover { background-color: #b91c1c; }
 
-    /* BLOCOS DE RESULTADO CORRIGIDOS (FORÇA ESTRUTURA VERTICAL E BLOCOS SEPARADOS) */
+    /* BLOCOS DE RESULTADO */
     .mensagem { 
       margin-top: 20px !important; 
       border-radius: 8px !important; 
       font-size: 14px !important; 
       text-align: left !important;
-      display: block !important; /* Força quebra de linha vertical */
+      display: block !important; 
       width: 100% !important;
       box-sizing: border-box !important;
     }
@@ -163,7 +167,7 @@
         <button onclick="cancelarLoteAtivo()" class="btn-cancelar-lote">❌ Cancelar Lote</button>
       </div>
 
-      <form id="formSN" onsubmit="event.preventDefault(); submeterValidacao();">
+      <form id="formSN" onsubmit="submeterValidacao(event)">
         <div class="campo-grupo">
           <input type="text" id="snInput" placeholder="Bipe a SN (24 caracteres)" autocomplete="off" autofocus required style="padding: 12px; font-size: 15px;">
         </div>
@@ -202,6 +206,7 @@
 
   <script>
     let loteAtivo = { usuario: '', meta: 0, atual: 0, produtoId: null, snPendente: '' };
+    let enviando = false; // Trava contra duplo envio/bipagem paralela
 
     function tocarBipe(sucesso = true) {
       try {
@@ -212,7 +217,7 @@
         osc.frequency.value = sucesso ? 1200 : 300;
         gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
         osc.connect(gain);
-        gain.connect(audioCtx.destination);
+        osc.connect(audioCtx.destination);
         osc.start();
         osc.stop(audioCtx.currentTime + (sucesso ? 0.15 : 0.3));
       } catch (e) {}
@@ -241,22 +246,33 @@
 
     function cancelarLoteAtivo() {
       if (confirm("Tem certeza que deseja cancelar o lote atual? O progresso será resetado.")) {
-        loteAtivo = { usuario: '', meta: 0, atual: 0, produtoId: null, snPendente: '' };
-        document.getElementById('secaoBipagem').style.display = 'none';
-        document.getElementById('secaoConfigLote').style.display = 'block';
-        document.getElementById('mensagem').className = 'mensagem';
-        document.getElementById('mensagem').innerHTML = '';
-        document.getElementById('snInput').value = '';
+        encerrarLoteSemCancelar();
       }
     }
 
-    async function submeterValidacao() {
+    function encerrarLoteSemCancelar() {
+      loteAtivo = { usuario: '', meta: 0, atual: 0, produtoId: null, snPendente: '' };
+      document.getElementById('secaoBipagem').style.display = 'none';
+      document.getElementById('secaoConfigLote').style.display = 'block';
+      document.getElementById('mensagem').className = 'mensagem';
+      document.getElementById('mensagem').innerHTML = '';
+      document.getElementById('snInput').value = '';
+    }
+
+    async function submeterValidacao(event) {
+      if (event) event.preventDefault();
+
+      if (enviando) return; // Se já está enviando, ignora
+
       const inputSn = document.getElementById('snInput');
       const snVal = inputSn.value.trim();
       const divMensagem = document.getElementById('mensagem');
+      
       if (!snVal) return;
 
       try {
+        enviando = true; // Bloqueia novos disparos enquanto requisita API
+
         const res = await fetch('/api/validar-sn', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -305,8 +321,10 @@
           inputSn.focus();
 
           if (loteAtivo.atual >= loteAtivo.meta) {
-            alert(`🎉 Parabéns! O lote de ${loteAtivo.meta} unidades foi concluído com sucesso!`);
-            cancelarLoteAtivo();
+            setTimeout(() => {
+              alert(`🎉 Parabéns! O lote de ${loteAtivo.meta} unidades foi concluído com sucesso!`);
+              encerrarLoteSemCancelar();
+            }, 100);
           }
 
         } else if (data.requerSelecao) {
@@ -317,12 +335,14 @@
         } else {
           tocarBipe(false);
           divMensagem.className = "mensagem erro";
-          divMensagem.innerHTML = `❌ ${data.erro}`;
+          divMensagem.innerHTML = `❌ ${data.erro || 'Erro ao validar SN'}`;
           inputSn.select();
         }
       } catch (error) {
         tocarBipe(false);
         console.error("Erro na validação:", error);
+      } finally {
+        enviando = false; // Desbloqueia para o próximo bip
       }
     }
 
@@ -342,10 +362,6 @@
       });
       document.getElementById('modalSelecao').style.display = 'flex';
     }
-
-    document.getElementById('snInput').addEventListener('input', (e) => {
-      if (e.target.value.trim().length === 24) submeterValidacao();
-    });
 
     function abrirModalSenha() {
       document.getElementById('modalSenhaAdmin').style.display = 'flex';
