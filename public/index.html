@@ -20,14 +20,13 @@
       border-radius: 6px;
       cursor: pointer;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      transition: background-color 0.2s ease, transform 0.1s ease;
-      width: auto;
-      display: inline-flex;
+      transition: background-color 0.2s ease;
+      width: auto !important;
+      display: inline-flex !important;
       align-items: center;
       gap: 6px;
     }
     .btn-admin-topo:hover { background-color: #555555; }
-    .btn-admin-topo:active { transform: scale(0.97); }
 
     /* Layout Geral */
     .container { max-width: 550px; margin: 40px auto; padding: 20px; }
@@ -56,50 +55,82 @@
     .campo-grupo { display: flex; flex-direction: column; gap: 6px; margin-bottom: 15px; }
     .campo-grupo label { font-weight: bold; color: #374151; font-size: 0.9em; }
     .btn-modal { padding: 10px 20px; background-color: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; }
-    .btn-modal:hover { background-color: #1d4ed8; }
     .btn-modal-cancelar { padding: 10px 20px; background-color: #e5e7eb; color: #374151; border: none; border-radius: 6px; cursor: pointer; }
-    .btn-modal-cancelar:hover { background-color: #d1d5db; }
 
     .btn-cancelar-lote {
       background-color: #dc2626; color: white; font-size: 13px; font-weight: bold;
       padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer;
-      transition: background 0.2s; margin-top: 10px; width: auto;
+      transition: background 0.2s; margin-top: 10px; width: auto !important;
     }
     .btn-cancelar-lote:hover { background-color: #b91c1c; }
 
-    /* MENSAGENS E CARD DE RESULTADO ORGANIZADO */
-    .mensagem { margin-top: 20px; border-radius: 8px; font-size: 14px; text-align: left; }
+    /* BLOCOS DE RESULTADO CORRIGIDOS (FORÇA ESTRUTURA VERTICAL E BLOCOS SEPARADOS) */
+    .mensagem { 
+      margin-top: 20px !important; 
+      border-radius: 8px !important; 
+      font-size: 14px !important; 
+      text-align: left !important;
+      display: block !important; /* Força quebra de linha vertical */
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
     .mensagem.sucesso {
-      background-color: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 18px;
+      background-color: #f0fdf4 !important; 
+      border: 1px solid #bbf7d0 !important; 
+      color: #166534 !important; 
+      padding: 16px !important;
     }
     .mensagem.erro {
-      background-color: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 15px; font-weight: bold;
+      background-color: #fef2f2 !important; 
+      border: 1px solid #fecaca !important; 
+      color: #991b1b !important; 
+      padding: 15px !important; 
+      font-weight: bold !important;
     }
 
     .card-resultado-header {
-      display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
-      font-size: 16px; font-weight: bold; color: #15803d; border-bottom: 1px solid #dcfce7; padding-bottom: 8px;
+      display: flex !important; 
+      align-items: center !important; 
+      gap: 8px !important; 
+      margin-bottom: 12px !important;
+      font-size: 15px !important; 
+      font-weight: bold !important; 
+      color: #15803d !important; 
+      border-bottom: 1px solid #dcfce7 !important; 
+      padding-bottom: 8px !important;
     }
     .sn-destaque {
-      background: #dcfce7; padding: 6px 10px; border-radius: 4px; font-family: monospace;
-      font-weight: bold; font-size: 14px; color: #14532d; display: inline-block; margin-bottom: 12px;
+      background: #dcfce7; 
+      padding: 6px 10px; 
+      border-radius: 4px; 
+      font-family: monospace;
+      font-weight: bold; 
+      font-size: 14px; 
+      color: #14532d; 
+      display: inline-block; 
+      margin-bottom: 14px;
+      word-break: break-all;
     }
     .detalhes-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #ffffff;
-      padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; margin-top: 8px;
+      display: grid !important; 
+      grid-template-columns: 1fr 1fr !important; 
+      gap: 10px !important; 
+      background: #ffffff !important;
+      padding: 14px !important; 
+      border-radius: 6px !important; 
+      border: 1px solid #cbd5e1 !important; 
+      margin-top: 8px !important;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
-    .detalhe-item { display: flex; flex-direction: column; }
-    .detalhe-item.full { grid-column: span 2; }
-    .detalhe-label { font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: bold; margin-bottom: 2px; }
-    .detalhe-val { font-size: 13px; color: #1e293b; font-weight: 600; word-break: break-word; }
+    .detalhe-item { display: flex !important; flex-direction: column !important; }
+    .detalhe-item.full { grid-column: span 2 !important; }
+    .detalhe-label { font-size: 10px !important; text-transform: uppercase !important; color: #64748b !important; font-weight: bold !important; margin-bottom: 2px !important; }
+    .detalhe-val { font-size: 13px !important; color: #1e293b !important; font-weight: 600 !important; word-break: break-word !important; }
   </style>
 </head>
 <body>
 
-  <!-- Botão Admin -->
-  <button onclick="abrirModalSenha()" class="btn-admin-topo">
-    ⚙️ Painel Admin
-  </button>
+  <button onclick="abrirModalSenha()" class="btn-admin-topo">⚙️ Painel Admin</button>
 
   <div class="container">
     <h2 style="text-align: center; margin-bottom: 20px;">Check e validação de SN</h2>
@@ -143,7 +174,7 @@
     <div id="mensagem" class="mensagem"></div>
   </div>
 
-  <!-- MODAL DE SENHA ADMIN -->
+  <!-- MODAL SENHA ADMIN -->
   <div id="modalSenhaAdmin" class="modal">
     <div class="modal-content">
       <h3 style="margin-bottom: 10px;">🔐 Acesso Restrito</h3>
@@ -160,7 +191,7 @@
     </div>
   </div>
 
-  <!-- MODAL DE SELEÇÃO DE PRODUTO -->
+  <!-- MODAL SELEÇÃO DE PRODUTO -->
   <div id="modalSelecao" class="modal">
     <div class="modal-content">
       <h3>Selecione o Produto do Lote</h3>
@@ -170,38 +201,26 @@
   </div>
 
   <script>
-    let loteAtivo = {
-      usuario: '',
-      meta: 0,
-      atual: 0,
-      produtoId: null,
-      snPendente: ''
-    };
+    let loteAtivo = { usuario: '', meta: 0, atual: 0, produtoId: null, snPendente: '' };
 
     function tocarBipe(sucesso = true) {
       try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-
         osc.type = 'sine';
         osc.frequency.value = sucesso ? 1200 : 300;
         gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-
         osc.connect(gain);
         gain.connect(audioCtx.destination);
-
         osc.start();
         osc.stop(audioCtx.currentTime + (sucesso ? 0.15 : 0.3));
-      } catch (e) {
-        console.error("Áudio não suportado", e);
-      }
+      } catch (e) {}
     }
 
     function iniciarLote() {
       const email = document.getElementById('emailUsuario').value.trim();
       const qtd = parseInt(document.getElementById('qtdLote').value);
-
       if (!email) return alert("Por favor, digite seu e-mail.");
       if (!qtd || qtd < 10) return alert("A quantidade mínima do lote deve ser 10.");
 
@@ -209,7 +228,6 @@
       loteAtivo.meta = qtd;
       loteAtivo.atual = 0;
       loteAtivo.produtoId = null;
-      loteAtivo.snPendente = '';
 
       document.getElementById('infoEmail').innerText = email;
       document.getElementById('contadorLote').innerText = '0';
@@ -236,7 +254,6 @@
       const inputSn = document.getElementById('snInput');
       const snVal = inputSn.value.trim();
       const divMensagem = document.getElementById('mensagem');
-
       if (!snVal) return;
 
       try {
@@ -254,7 +271,6 @@
 
         if (res.ok && data.sucesso) {
           tocarBipe(true);
-
           if (!loteAtivo.produtoId) {
             loteAtivo.produtoId = data.produto.id;
             document.getElementById('infoProdutoFixado').innerText = `${data.produto.produto} (${data.produto.nome_modelo || 'S/ Modelo'})`;
@@ -269,7 +285,7 @@
             <div class="card-resultado-header">
               <span>✅</span> SN VALIDADA COM SUCESSO!
             </div>
-            <div style="font-size: 12px; color: #475569; margin-bottom: 4px;">SÉRIE LIDA:</div>
+            <div style="font-size: 11px; font-weight: bold; color: #475569; margin-bottom: 2px;">SÉRIE LIDA:</div>
             <div class="sn-destaque">${snVal}</div>
             
             <div style="font-size: 12px; font-weight: bold; color: #334155; margin-bottom: 6px;">📦 DADOS DO PRODUTO CADASTRADO:</div>
@@ -313,67 +329,48 @@
     function exibirModalSelecao(produtos) {
       const container = document.getElementById('listaProdutos');
       container.innerHTML = '';
-
       produtos.forEach(p => {
         const btn = document.createElement('button');
         btn.className = 'btn-opcao';
         btn.innerHTML = `<strong>${p.produto}</strong><br><small>Modelo: ${p.nome_modelo || 'N/A'} | DL: ${p.download_id} | HW: ${p.hardware_ns}</small>`;
-        btn.onclick = () => selecionarProdutoEValidar(p.id);
+        btn.onclick = () => {
+          loteAtivo.produtoId = p.id;
+          document.getElementById('modalSelecao').style.display = 'none';
+          submeterValidacao();
+        };
         container.appendChild(btn);
       });
-
       document.getElementById('modalSelecao').style.display = 'flex';
     }
 
-    function selecionarProdutoEValidar(idProduto) {
-      loteAtivo.produtoId = idProduto;
-      document.getElementById('modalSelecao').style.display = 'none';
-      submeterValidacao();
-    }
-
     document.getElementById('snInput').addEventListener('input', (e) => {
-      const val = e.target.value.trim();
-      if (val.length === 24) {
-        submeterValidacao();
-      }
+      if (e.target.value.trim().length === 24) submeterValidacao();
     });
 
     function abrirModalSenha() {
       document.getElementById('modalSenhaAdmin').style.display = 'flex';
       document.getElementById('inputSenhaAdmin').focus();
     }
-
     function fecharModalSenha() {
       document.getElementById('modalSenhaAdmin').style.display = 'none';
       document.getElementById('inputSenhaAdmin').value = '';
     }
-
-    function verificarTeclaSenha(event) {
-      if (event.key === 'Enter') {
-        confirmarSenhaAdmin();
-      }
-    }
+    function verificarTeclaSenha(event) { if (event.key === 'Enter') confirmarSenhaAdmin(); }
 
     async function confirmarSenhaAdmin() {
       const senha = document.getElementById('inputSenhaAdmin').value;
       if (!senha) return;
-
       try {
         const res = await fetch('/api/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ senha })
         });
-
         if (res.ok) {
           sessionStorage.setItem('adminPassword', senha);
           window.location.href = 'admin.html';
-        } else {
-          alert('Senha incorreta!');
-        }
-      } catch (e) {
-        alert('Erro de conexão ao validar senha.');
-      }
+        } else alert('Senha incorreta!');
+      } catch (e) { alert('Erro de conexão.'); }
     }
   </script>
 </body>

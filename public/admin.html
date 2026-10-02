@@ -17,10 +17,47 @@
     .card-header-flex { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
     .controls-group { display: flex; gap: 10px; align-items: center; }
     .input-busca { padding: 6px 10px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px; }
-    .pagination { display: flex; justify-content: flex-end; gap: 8px; align-items: center; margin-bottom: 20px; font-size: 13px; }
-    .btn-page { background: #edf2f7; border: 1px solid #cbd5e0; padding: 4px 10px; border-radius: 4px; cursor: pointer; }
-    .btn-page:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-export { background: #38a169; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; }
+    .pagination-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+  }
+  .pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .select-pagina {
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: 1px solid #cbd5e1;
+    background: #fff;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .input-go-page {
+    width: 60px;
+    padding: 5px 8px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 13px;
+  }
+  .btn-page {
+    padding: 6px 12px;
+    background: #e2e8f0;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #334155;
+  }
+  .btn-page:hover:not(:disabled) { background: #cbd5e1; }
+  .btn-page:disabled { opacity: 0.5; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -79,32 +116,22 @@
   </div>
 
 <!-- SEÇÃO HISTÓRICO -->
-<div style="margin-top: 30px; padding-top: 20px; border-top: 2px dashed #e2e8f0;">
-  <div class="card-header-flex">
-    <h3 style="color: #2d3748; margin: 0;">📋 Histórico de SNs Validadas</h3>
-    <div class="controls-group">
-      <input type="text" id="buscaHistorico" class="input-busca" placeholder="🔍 Buscar no histórico..." oninput="filtrarHistorico()">
-      <button onclick="exportarCSV()" class="btn-export">📥 Exportar CSV</button>
-    </div>
+<div class="pagination-container">
+  <div>
+    <span>Página:</span>
+    <select id="selectPaginaHist" class="select-pagina" onchange="irParaPaginaSeletor(this.value)"></select>
+    <span id="infoTotalPaginasHist" style="color: #64748b; font-size: 13px;"></span>
   </div>
-  <div class="table-responsive">
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Número de Série (SN)</th>
-          <th>Produto</th>
-          <th>Usuário / E-mail</th>
-          <th>Data da Validação</th>
-        </tr>
-      </thead>
-      <tbody id="tabela-historico-corpo"></tbody>
-    </table>
-  </div>
-  <div class="pagination">
-    <span id="infoPaginaHist"></span>
+
+  <div class="pagination-controls">
+    <button id="btnFirstHist" class="btn-page" onclick="irParaPaginaHist(1)" title="Primeira Página">«</button>
     <button id="btnPrevHist" class="btn-page" onclick="mudarPaginaHist(-1)">Anterior</button>
+    
+    <input type="number" id="inputGoPage" class="input-go-page" placeholder="Nº" min="1" onkeypress="if(event.key==='Enter') irParaPaginaDigitada()">
+    <button class="btn-page" onclick="irParaPaginaDigitada()">Ir</button>
+
     <button id="btnNextHist" class="btn-page" onclick="mudarPaginaHist(1)">Próximo</button>
+    <button id="btnLastHist" class="btn-page" onclick="irParaPaginaHist(totalPagHist)" title="Última Página">»</button>
   </div>
 </div>
 
@@ -219,11 +246,14 @@ function mudarPaginaProd(delta) {
 }
 
 // HISTÓRICO
+let pagHist = 1;
+let totalPagHist = 1;
+
 async function carregarHistorico() {
   if (!senhaAdmin && !(await solicitarSenha())) return;
 
   const busca = document.getElementById('buscaHistorico').value;
-  const res = await fetch(`/api/historico-sns?page=${pagHist}&limit=5&search=${encodeURIComponent(busca)}`, {
+  const res = await fetch(`/api/historico-sns?page=${pagHist}&limit=10&search=${encodeURIComponent(busca)}`, {
     headers: { 'x-admin-password': senhaAdmin }
   });
 
@@ -234,12 +264,12 @@ async function carregarHistorico() {
   tbody.innerHTML = '';
 
   (data.dados || []).forEach(item => {
-    const infoProduto = item.nome_modelo ? `<b>${item.produto}</b> <br><small style="color:#718096;">${item.nome_modelo}</small>` : `<b>${item.produto}</b>`;
+    const infoProduto = item.nome_modelo ? `<b>${item.produto}</b><br><small style="color:#64748b;">${item.nome_modelo}</small>` : `<b>${item.produto}</b>`;
     
     tbody.innerHTML += `
       <tr>
         <td>${item.id}</td>
-        <td style="font-family: monospace; font-weight: bold;">${item.sn}</td>
+        <td style="font-family: monospace; font-weight: bold; color:#1e293b;">${item.sn}</td>
         <td>${infoProduto}</td>
         <td>${item.usuario}</td>
         <td>${item.data}</td>
@@ -247,18 +277,60 @@ async function carregarHistorico() {
   });
 
   totalPagHist = data.totalPaginas || 1;
-  document.getElementById('infoPaginaHist').innerText = `Página ${pagHist} de ${totalPagHist}`;
-  document.getElementById('btnPrevHist').disabled = (pagHist <= 1);
-  document.getElementById('btnNextHist').disabled = (pagHist >= totalPagHist);
+  atualizarControlesPaginação();
 }
 
-function filtrarHistorico() {
-  clearTimeout(timerBuscaHist);
-  timerBuscaHist = setTimeout(() => { pagHist = 1; carregarHistorico(); }, 300);
+function atualizarControlesPaginação() {
+  const select = document.getElementById('selectPaginaHist');
+  select.innerHTML = '';
+
+  // Preenche o Select com até todas as páginas
+  for (let i = 1; i <= totalPagHist; i++) {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.innerText = `Página ${i}`;
+    if (i === pagHist) opt.selected = true;
+    select.appendChild(opt);
+  }
+
+  document.getElementById('infoTotalPaginasHist').innerText = `de ${totalPagHist} (Total: ${totalPagHist * 10} registros)`;
+  document.getElementById('btnFirstHist').disabled = (pagHist <= 1);
+  document.getElementById('btnPrevHist').disabled = (pagHist <= 1);
+  document.getElementById('btnNextHist').disabled = (pagHist >= totalPagHist);
+  document.getElementById('btnLastHist').disabled = (pagHist >= totalPagHist);
+  document.getElementById('inputGoPage').value = pagHist;
 }
 
 function mudarPaginaHist(delta) {
-  pagHist += delta;
+  const novaPag = pagHist + delta;
+  if (novaPag >= 1 && novaPag <= totalPagHist) {
+    pagHist = novaPag;
+    carregarHistorico();
+  }
+}
+
+function irParaPaginaHist(num) {
+  if (num >= 1 && num <= totalPagHist) {
+    pagHist = num;
+    carregarHistorico();
+  }
+}
+
+function irParaPaginaSeletor(val) {
+  irParaPaginaHist(parseInt(val));
+}
+
+function irParaPaginaDigitada() {
+  const val = parseInt(document.getElementById('inputGoPage').value);
+  if (val && val >= 1 && val <= totalPagHist) {
+    irParaPaginaHist(val);
+  } else {
+    alert(`Por favor, insira um número entre 1 e ${totalPagHist}`);
+  }
+}
+
+function filtrarHistorico() {
+  pagHist = 1; // Reseta para a primeira página ao buscar
   carregarHistorico();
 }
 
