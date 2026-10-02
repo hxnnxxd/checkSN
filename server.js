@@ -6,15 +6,9 @@ require('dotenv').config();
 
 const app = express();
 
-// Middlewares Globais
 app.use(express.json());
 app.use(cors());
 
-// =======================================================
-// ROTAS DE AUTENTICAÇÃO E NAVEGAÇÃO DO ADMIN
-// =======================================================
-
-// 1. Endpoint de validação de login via POST (Seguro)
 app.post('/api/login', (req, res) => {
   const { senha } = req.body;
   const senhaCorreta = process.env.ADMIN_PASSWORD || 'admin123';
@@ -26,16 +20,12 @@ app.post('/api/login', (req, res) => {
   return res.status(401).json({ erro: 'Senha incorreta.' });
 });
 
-// 2. Entrega a página admin.html sem expor parâmetros na URL
 app.get('/admin.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
-// Servir arquivos estáticos da pasta public
-// (Colocado APÓS as rotas explícitas para garantir o controle)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Configuração do Pool de Conexões do MySQL
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   port: process.env.DB_PORT || 3306,
@@ -48,18 +38,6 @@ const pool = mysql.createPool({
   ssl: process.env.DB_HOST ? { rejectUnauthorized: false } : false
 });
 
-// Testar a conexão ao iniciar o servidor
-(async () => {
-  try {
-    const connection = await pool.getConnection();
-    console.log('✅ Conexão com o banco MySQL estabelecida com sucesso!');
-    connection.release();
-  } catch (error) {
-    console.error('❌ Erro ao conectar ao banco MySQL:', error.message);
-  }
-})();
-
-// Função auxiliar para registrar logs de erro
 async function registrarErroBD(sn, motivo, usuario) {
   try {
     await pool.query(
@@ -71,21 +49,18 @@ async function registrarErroBD(sn, motivo, usuario) {
   }
 }
 
-// MIDDLEWARE: Proteção para as APIs administrativas
 const verificarSenhaAPI = (req, res, next) => {
   const senhaInformada = req.headers['x-admin-password'];
   const senhaCorreta = process.env.ADMIN_PASSWORD || 'admin123';
 
   if (senhaInformada && senhaInformada === senhaCorreta) {
-    next(); // Senha confere, avança para a rota desejada
+    next();
   } else {
     res.status(401).json({ erro: 'Não autorizado: Senha administrativa inválida ou não fornecida.' });
   }
 };
 
-// =======================================================
-// ROTA DE VALIDAÇÃO COM SUPORTE A MÚLTIPLOS PRODUTOS E LOTE
-// =======================================================
+// ROTA DE VALIDAÇÃO COM RETORNO COMPLETO DO PRODUTO
 app.post('/api/validar-sn', async (req, res) => {
   const { sn, usuario, produtoFixadoId } = req.body;
 
@@ -93,46 +68,39 @@ app.post('/api/validar-sn', async (req, res) => {
     return res.status(400).json({ erro: 'A SN e o E-mail/Usuário são obrigatórios.' });
   }
 
-  const dadoBruto = String(sn);
+  const dadoBruto = String(sn).trim();
 
   try {
-    // 1. Verificação de Espaços
-    if (/\s/.test(dadoBruto) || dadoBruto.includes(' ')) {
+    if (/\s/.test(dadoBruto)) {
       await registrarErroBD(dadoBruto, "Contém espaços", usuario);
       return res.status(400).json({ erro: "Erro: O dado inserido não pode conter espaços em branco." });
     }
 
-    // 2. Trava de Letras Minúsculas
     if (/[a-z]/.test(dadoBruto)) {
       await registrarErroBD(dadoBruto, "Contém letras minúsculas", usuario);
       return res.status(400).json({ erro: "Erro: O dado inserido contém letras minúsculas." });
     }
 
-    // 3. Tamanho exato de 24 caracteres
     if (dadoBruto.length !== 24) {
       await registrarErroBD(dadoBruto, `Tamanho incorreto (${dadoBruto.length} chars)`, usuario);
       return res.status(400).json({ erro: "Erro: O dado inserido deve conter exatamente 24 caracteres." });
     }
 
-    // 4. Prefixo '00'
     if (!dadoBruto.startsWith("00")) {
       await registrarErroBD(dadoBruto, "Não inicia com '00'", usuario);
       return res.status(400).json({ erro: "Erro: O dado inserido deve iniciar obrigatoriamente com '00'." });
     }
 
-    // 5. Checagem de Duplicidade Global (SN já validada)
     const [duplicados] = await pool.query("SELECT id FROM check_sns WHERE sn = ?", [dadoBruto]);
     if (duplicados.length > 0) {
       await registrarErroBD(dadoBruto, "SN já cadastrada/duplicada", usuario);
       return res.status(400).json({ erro: `Erro: A SN '${dadoBruto}' JÁ FOI VALIDADA anteriormente!` });
     }
 
-    // 6. Extração da Chave (Download ID e Hardware NS)
     const downloadIdExtraido = dadoBruto.substring(2, 7);
     const hardwareNsExtraido = dadoBruto.substring(14, 16);
     const chaveSN = downloadIdExtraido + hardwareNsExtraido;
 
-    // Busca produtos compatíveis com a chave no banco
     const [produtosEncontrados] = await pool.query(
       "SELECT * FROM produtos WHERE download_id = ? AND hardware_ns = ?",
       [downloadIdExtraido, hardwareNsExtraido]
@@ -148,19 +116,15 @@ app.post('/api/validar-sn', async (req, res) => {
 
     let produtoFinal = null;
 
-    // SE O LOTE JÁ TEM UM PRODUTO FIXADO:
     if (produtoFixadoId) {
       produtoFinal = produtosEncontrados.find(p => p.id == produtoFixadoId);
-      
       if (!produtoFinal) {
         await registrarErroBD(dadoBruto, "SN incompatível com o produto fixado no lote", usuario);
         return res.status(400).json({
-          erro: `Erro: Esta SN pertênce a outro modelo/produto e diverge do produto selecionado para este lote!`
+          erro: `Erro: Esta SN pertence a outro modelo/produto e diverge do produto selecionado para este lote!`
         });
       }
-    } 
-    // SE O LOTE AINDA NÃO TEM PRODUTO FIXADO:
-    else {
+    } else {
       if (produtosEncontrados.length > 1) {
         return res.json({
           requerSelecao: true,
@@ -168,11 +132,9 @@ app.post('/api/validar-sn', async (req, res) => {
           produtos: produtosEncontrados
         });
       }
-      
       produtoFinal = produtosEncontrados[0];
     }
 
-    // 7. Salva a SN validada
     await pool.query(
       "INSERT INTO check_sns (sn, usuario) VALUES (?, ?)",
       [dadoBruto, usuario]
@@ -181,7 +143,7 @@ app.post('/api/validar-sn', async (req, res) => {
     return res.json({
       sucesso: true,
       mensagem: `SN '${dadoBruto}' registrada com sucesso!`,
-      produto: produtoFinal
+      produto: produtoFinal // Retorna TODOS os campos da tabela de produtos
     });
 
   } catch (error) {
@@ -190,131 +152,177 @@ app.post('/api/validar-sn', async (req, res) => {
   }
 });
 
-// =======================================================
-// ROTAS DE GESTÃO DE PRODUTOS / DADOS MESTRES
-// =======================================================
-
-// 1. Listar todos os produtos
+// LISTAR PRODUTOS COM BUSCA E PAGINAÇÃO
 app.get('/api/produtos', async (req, res) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM produtos ORDER BY id DESC");
-    res.json(rows);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search ? `%${req.query.search.trim()}%` : null;
+    const offset = (page - 1) * limit;
+
+    let query = "SELECT * FROM produtos";
+    let countQuery = "SELECT COUNT(*) as total FROM produtos";
+    let params = [];
+
+    if (search) {
+      const where = " WHERE produto LIKE ? OR download_id LIKE ? OR hardware_ns LIKE ? OR nome_modelo LIKE ? OR product_model LIKE ? OR product_no LIKE ?";
+      query += where;
+      countQuery += where;
+      params = [search, search, search, search, search, search];
+    }
+
+    query += " ORDER BY id DESC LIMIT ? OFFSET ?";
+    
+    const [totalRows] = await pool.query(countQuery, params);
+    const [rows] = await pool.query(query, [...params, limit, offset]);
+
+    res.json({
+      dados: rows,
+      total: totalRows[0].total,
+      pagina: page,
+      totalPaginas: Math.ceil(totalRows[0].total / limit)
+    });
   } catch (error) {
     console.error("Erro ao buscar produtos:", error);
     res.status(500).json({ erro: "Erro ao buscar produtos no banco." });
   }
 });
 
-// 2. Cadastrar produto (Protegido por senha)
+// CADASTRAR PRODUTO
 app.post('/api/produtos', verificarSenhaAPI, async (req, res) => {
   const {
-    produto,
-    descricao_produto,
-    nome_modelo,
-    descricao_modelo,
-    product_model,
-    product_no,
-    download_id,
-    hardware_ns
+    produto, descricao_produto, nome_modelo, descricao_modelo,
+    product_model, product_no, download_id, hardware_ns
   } = req.body;
 
   if (!produto || !download_id || !hardware_ns) {
-    return res.status(400).json({ 
-      erro: "Os campos 'PRODUTO', 'DOWNLOAD ID' e 'HARDWARE NS' são obrigatórios." 
-    });
+    return res.status(400).json({ erro: "Os campos 'PRODUTO', 'DOWNLOAD ID' e 'HARDWARE NS' são obrigatórios." });
   }
 
-  const prodLimpo = produto.trim();
-  const dlIdLimpo = download_id.trim();
-  const hwNsLimpo = hardware_ns.trim();
-
   try {
-    const [existentes] = await pool.query(
-      "SELECT id FROM produtos WHERE produto = ?",
-      [prodLimpo]
-    );
-
-    if (existentes.length > 0) {
-      return res.status(400).json({
-        erro: `Erro: O código de produto '${prodLimpo}' já está cadastrado no sistema!`
-      });
-    }
-
     await pool.query(
       `INSERT INTO produtos 
       (produto, descricao_produto, nome_modelo, descricao_modelo, product_model, product_no, download_id, hardware_ns) 
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        prodLimpo,
+        produto.trim(),
         descricao_produto ? descricao_produto.trim() : '',
         nome_modelo ? nome_modelo.trim() : '',
         descricao_modelo ? descricao_modelo.trim() : '',
         product_model ? product_model.trim() : '',
         product_no ? product_no.trim() : '',
-        dlIdLimpo,
-        hwNsLimpo
+        download_id.trim(),
+        hardware_ns.trim()
       ]
     );
 
     res.json({ sucesso: true, message: "Produto cadastrado com sucesso!" });
-
   } catch (error) {
     console.error("Erro ao cadastrar produto:", error);
-
-    if (error.code === 'ER_DUP_ENTRY') {
-      return res.status(400).json({ 
-        erro: `Erro: O produto '${prodLimpo}' já existe no banco de dados.` 
-      });
-    }
-
     res.status(500).json({ erro: "Erro ao salvar produto no banco de dados." });
   }
 });
 
-// 3. Excluir produto (Protegido por senha)
+// EXCLUIR PRODUTO
 app.delete('/api/produtos/:id', verificarSenhaAPI, async (req, res) => {
   const { id } = req.params;
   try {
     await pool.query("DELETE FROM produtos WHERE id = ?", [id]);
     res.json({ sucesso: true, mensagem: "Produto excluído com sucesso!" });
   } catch (error) {
-    console.error("Erro ao excluir produto:", error);
     res.status(500).json({ erro: "Erro ao excluir produto no banco." });
   }
 });
 
-// =======================================================
-// ROTAS DE HISTÓRICO E LOGS (PAINEL ADMIN)
-// =======================================================
-
-// Histórico de SNs Validadas (Protegido por senha)
+// HISTÓRICO DE SNS COM BUSCA E PAGINAÇÃO
 app.get('/api/historico-sns', verificarSenhaAPI, async (req, res) => {
   try {
-    const [rows] = await pool.query(
-      "SELECT id, sn, usuario, DATE_FORMAT(data_validacao, '%d/%m/%Y %H:%i:%s') AS data FROM check_sns ORDER BY id DESC"
-    );
-    res.json(rows);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search ? `%${req.query.search.trim()}%` : null;
+    const offset = (page - 1) * limit;
+
+    let query = "SELECT id, sn, usuario, DATE_FORMAT(data_validacao, '%d/%m/%Y %H:%i:%s') AS data FROM check_sns";
+    let countQuery = "SELECT COUNT(*) as total FROM check_sns";
+    let params = [];
+
+    if (search) {
+      const where = " WHERE sn LIKE ? OR usuario LIKE ?";
+      query += where;
+      countQuery += where;
+      params = [search, search];
+    }
+
+    query += " ORDER BY id DESC LIMIT ? OFFSET ?";
+
+    const [totalRows] = await pool.query(countQuery, params);
+    const [rows] = await pool.query(query, [...params, limit, offset]);
+
+    res.json({
+      dados: rows,
+      total: totalRows[0].total,
+      pagina: page,
+      totalPaginas: Math.ceil(totalRows[0].total / limit)
+    });
   } catch (error) {
-    console.error("Erro ao buscar histórico de SNs:", error);
     res.status(500).json({ erro: "Erro ao buscar histórico no banco." });
   }
 });
 
-// Histórico de Logs de Erros (Protegido por senha)
-app.get('/api/logs-erros', verificarSenhaAPI, async (req, res) => {
+// EXPORTAÇÃO CSV DE HISTÓRICO COMPLETO
+app.get('/api/historico-sns/exportar', verificarSenhaAPI, async (req, res) => {
   try {
     const [rows] = await pool.query(
-      "SELECT id, sn, motivo, usuario, DATE_FORMAT(data_erro, '%d/%m/%Y %H:%i:%s') AS data FROM logs_erros ORDER BY id DESC"
+      "SELECT id, sn, usuario, DATE_FORMAT(data_validacao, '%d/%m/%Y %H:%i:%s') AS data FROM check_sns ORDER BY id DESC"
     );
-    res.json(rows);
+
+    let csv = "ID,SN,Usuario,Data_Validacao\n";
+    rows.forEach(r => {
+      csv += `"${r.id}","${r.sn}","${r.usuario}","${r.data}"\n`;
+    });
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="historico_sns.csv"');
+    res.status(200).send('\uFEFF' + csv);
   } catch (error) {
-    console.error("Erro ao buscar logs de erros:", error);
+    res.status(500).json({ erro: "Erro ao exportar relatório." });
+  }
+});
+
+// LOGS DE ERRO COM BUSCA E PAGINAÇÃO
+app.get('/api/logs-erros', verificarSenhaAPI, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search ? `%${req.query.search.trim()}%` : null;
+    const offset = (page - 1) * limit;
+
+    let query = "SELECT id, sn, motivo, usuario, DATE_FORMAT(data_erro, '%d/%m/%Y %H:%i:%s') AS data FROM logs_erros";
+    let countQuery = "SELECT COUNT(*) as total FROM logs_erros";
+    let params = [];
+
+    if (search) {
+      const where = " WHERE sn LIKE ? OR motivo LIKE ? OR usuario LIKE ?";
+      query += where;
+      countQuery += where;
+      params = [search, search, search];
+    }
+
+    query += " ORDER BY id DESC LIMIT ? OFFSET ?";
+
+    const [totalRows] = await pool.query(countQuery, params);
+    const [rows] = await pool.query(query, [...params, limit, offset]);
+
+    res.json({
+      dados: rows,
+      total: totalRows[0].total,
+      pagina: page,
+      totalPaginas: Math.ceil(totalRows[0].total / limit)
+    });
+  } catch (error) {
     res.status(500).json({ erro: "Erro ao buscar logs no banco." });
   }
 });
 
-// Inicialização do Servidor
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando na porta ${PORT}`);
-});
+app.listen(PORT, () => console.log(`🚀 Servidor rodando na porta ${PORT}`));

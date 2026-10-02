@@ -210,62 +210,115 @@
   </div>
 
   <script>
-    function abrirModalSenha() {
-      const modal = document.getElementById('modalSenhaAdmin');
-      const input = document.getElementById('inputSenhaAdmin');
-      modal.style.display = 'flex';
-      input.value = ''; 
-      setTimeout(() => input.focus(), 100); 
+// Gerador de Som de Bipe (Web Audio API)
+function tocarBipe(sucesso = true) {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.value = sucesso ? 1200 : 300; // Frequência alta para OK, grave para ERRO
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.start();
+    osc.stop(audioCtx.currentTime + (sucesso ? 0.15 : 0.3));
+  } catch (e) {
+    console.error("Áudio não suportado no navegador", e);
+  }
+}
+
+let produtoFixadoId = null;
+
+async function submeterValidacao() {
+  const inputSn = document.getElementById('inputSN');
+  const usuario = document.getElementById('inputUsuario').value;
+  const snVal = inputSn.value.trim();
+  const divResultado = document.getElementById('resultado');
+
+  if (!snVal) return;
+
+  try {
+    const res = await fetch('/api/validar-sn', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sn: snVal,
+        usuario: usuario,
+        produtoFixadoId: produtoFixadoId
+      })
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.sucesso) {
+      tocarBipe(true); // Bipe de Sucesso
+
+      // Fixa o id do produto no lote atual
+      produtoFixadoId = data.produto.id;
+
+      const p = data.produto;
+      divResultado.className = "resultado sucesso";
+      divResultado.innerHTML = `
+        <h3>✅ SN VALIDADA COM SUCESSO!</h3>
+        <p><b>SN:</b> ${snVal}</p>
+        <hr style="margin: 10px 0; border: 0; border-top: 1px solid #cbd5e0;">
+        <h4>📦 Detalhes do Produto:</h4>
+        <ul style="list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; text-align: left;">
+          <li><b>Produto:</b> ${p.produto}</li>
+          <li><b>Download ID:</b> ${p.download_id}</li>
+          <li><b>Hardware NS:</b> ${p.hardware_ns}</li>
+          <li><b>Nome Modelo:</b> ${p.nome_modelo || '-'}</li>
+          <li><b>Product Model:</b> ${p.product_model || '-'}</li>
+          <li><b>Product No:</b> ${p.product_no || '-'}</li>
+          <li><b>Desc. Produto:</b> ${p.descricao_produto || '-'}</li>
+          <li><b>Desc. Modelo:</b> ${p.descricao_modelo || '-'}</li>
+        </ul>
+      `;
+
+      // Modo Contínuo: Limpa o input e mantém o foco para a próxima leitura
+      inputSn.value = "";
+      inputSn.focus();
+
+    } else if (data.requerSelecao) {
+      // Caso haja múltiplos produtos para a mesma chave
+      tocarBipe(false);
+      let opcoes = data.produtos.map(p => `<option value="${p.id}">${p.produto} - ${p.nome_modelo || ''}</option>`).join('');
+      divResultado.className = "resultado alerta";
+      divResultado.innerHTML = `
+        <p>${data.mensagem}</p>
+        <select id="selectProdutoLote">${opcoes}</select>
+        <button onclick="confirmarSelecaoLote('${snVal}')">Confirmar e Validar</button>
+      `;
+    } else {
+      tocarBipe(false); // Bipe de Erro
+      divResultado.className = "resultado erro";
+      divResultado.innerHTML = `❌ ${data.erro}`;
+      inputSn.select();
     }
+  } catch (error) {
+    tocarBipe(false);
+    console.error(error);
+  }
+}
 
-    function fecharModalSenha() {
-      document.getElementById('modalSenhaAdmin').style.display = 'none';
-    }
+function confirmarSelecaoLote(snVal) {
+  const select = document.getElementById('selectProdutoLote');
+  produtoFixadoId = select.value;
+  submeterValidacao();
+}
 
-    function confirmarSenhaAdmin() {
-      const senha = document.getElementById('inputSenhaAdmin').value;
-      if (senha) {
-        fecharModalSenha();
-        window.location.href = `/admin.html?senha=${encodeURIComponent(senha)}`;
-      } else {
-        alert("Por favor, digite uma senha.");
-      }
-    }
-
-    function verificarTeclaSenha(event) {
-      if (event.key === 'Enter') {
-        confirmarSenhaAdmin();
-      }
-    }
-
-    // NOVA FUNÇÃO: Reseta o lote atual e volta para a tela de configuração inicial
-    function cancelarLoteAtivo() {
-      if (confirm("Tem certeza que deseja cancelar o lote ativo? O progresso atual da tela será reiniciado.")) {
-        // Esconde o painel de bipagem e mostra o painel de configuração novamente
-        document.getElementById('secaoBipagem').style.display = 'none';
-        document.getElementById('secaoConfigLote').style.display = 'block';
-        
-        // Limpa o campo de mensagem
-        const msgDiv = document.getElementById('mensagem');
-        if (msgDiv) {
-          msgDiv.innerHTML = '';
-          msgDiv.className = 'mensagem';
-        }
-
-        // Se o seu script.js controlar variáveis globais na memória, 
-        // a melhor forma de garantir que elas limpem é resetando os elementos visuais
-        document.getElementById('contadorLote').innerText = '0';
-        document.getElementById('infoProdutoFixado').innerText = 'Aguardando 1ª bipagem...';
-        document.getElementById('snInput').value = '';
-
-        // Tenta chamar o reset de lote de dentro do script.js se ele existir
-        // Caso seu script guarde o estado em variáveis como 'loteAtivo = false', 
-        // recarregar parcialmente ou redefinir pelo script.js seria ideal.
-        if (typeof inicializarVariaveisLote === "function") {
-          inicializarVariaveisLote();
-        }
-      }
-    }
+// Configuração do Leitor Contínuo
+document.getElementById('inputSN').addEventListener('input', (e) => {
+  const val = e.target.value.trim();
+  // Quando atinge 24 caracteres (padrão de bipagem rápida do leitor), valida automaticamente
+  if (val.length === 24) {
+    submeterValidacao();
+  }
+});
   </script>
   <script src="script.js"></script>
 </body>
