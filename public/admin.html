@@ -15,49 +15,48 @@
     .nav-link { color: #3182ce; font-weight: bold; text-decoration: none; }
     .btn-logout { background: #e53e3e; color: white; border: none; padding: 8px 14px; border-radius: 4px; cursor: pointer; font-weight: bold; }
     .card-header-flex { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
-    .controls-group { display: flex; gap: 10px; align-items: center; }
     .input-busca { padding: 6px 10px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px; }
     .btn-export { background: #38a169; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; }
     .pagination-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-top: 15px;
-    flex-wrap: wrap;
-  }
-  .pagination-controls {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .select-pagina {
-    padding: 6px 10px;
-    border-radius: 4px;
-    border: 1px solid #cbd5e1;
-    background: #fff;
-    font-size: 13px;
-    cursor: pointer;
-  }
-  .input-go-page {
-    width: 60px;
-    padding: 5px 8px;
-    border: 1px solid #cbd5e1;
-    border-radius: 4px;
-    text-align: center;
-    font-size: 13px;
-  }
-  .btn-page {
-    padding: 6px 12px;
-    background: #e2e8f0;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    color: #334155;
-  }
-  .btn-page:hover:not(:disabled) { background: #cbd5e1; }
-  .btn-page:disabled { opacity: 0.5; cursor: not-allowed; }
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 15px;
+      flex-wrap: wrap;
+    }
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .select-pagina {
+      padding: 6px 10px;
+      border-radius: 4px;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .input-go-page {
+      width: 60px;
+      padding: 5px 8px;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 13px;
+    }
+    .btn-page {
+      padding: 6px 12px;
+      background: #e2e8f0;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      color: #334155;
+    }
+    .btn-page:hover:not(:disabled) { background: #cbd5e1; }
+    .btn-page:disabled { opacity: 0.5; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -115,30 +114,53 @@
     </div>
   </div>
 
-<!-- SEÇÃO HISTÓRICO -->
-<div class="pagination-container">
-  <div>
-    <span>Página:</span>
-    <select id="selectPaginaHist" class="select-pagina" onchange="irParaPaginaSeletor(this.value)"></select>
-    <span id="infoTotalPaginasHist" style="color: #64748b; font-size: 13px;"></span>
-  </div>
+  <!-- SEÇÃO HISTÓRICO -->
+  <div style="margin-top: 40px; padding-top: 20px; border-top: 2px dashed #e2e8f0;">
+    <div class="card-header-flex">
+      <h3 style="color: #2d3748; margin: 0;">📜 Histórico de Validações</h3>
+      <div class="controls-group">
+        <input type="text" id="buscaHistorico" class="input-busca" placeholder="🔍 Buscar histórico..." oninput="filtrarHistorico()">
+        <button onclick="exportarCSV()" class="btn-export">📥 Exportar CSV</button>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Número de Série (SN)</th>
+            <th>Produto / Modelo</th>
+            <th>Usuário</th>
+            <th>Data/Hora</th>
+          </tr>
+        </thead>
+        <tbody id="tabela-historico-corpo"></tbody>
+      </table>
+    </div>
+    <div class="pagination-container">
+      <div>
+        <span>Página:</span>
+        <select id="selectPaginaHist" class="select-pagina" onchange="irParaPaginaSeletor(this.value)"></select>
+        <span id="infoTotalPaginasHist" style="color: #64748b; font-size: 13px;"></span>
+      </div>
 
-  <div class="pagination-controls">
-    <button id="btnFirstHist" class="btn-page" onclick="irParaPaginaHist(1)" title="Primeira Página">«</button>
-    <button id="btnPrevHist" class="btn-page" onclick="mudarPaginaHist(-1)">Anterior</button>
-    
-    <input type="number" id="inputGoPage" class="input-go-page" placeholder="Nº" min="1" onkeypress="if(event.key==='Enter') irParaPaginaDigitada()">
-    <button class="btn-page" onclick="irParaPaginaDigitada()">Ir</button>
+      <div class="pagination-controls">
+        <button id="btnFirstHist" class="btn-page" onclick="irParaPaginaHist(1)" title="Primeira Página">«</button>
+        <button id="btnPrevHist" class="btn-page" onclick="mudarPaginaHist(-1)">Anterior</button>
+        
+        <input type="number" id="inputGoPage" class="input-go-page" placeholder="Nº" min="1" onkeypress="if(event.key==='Enter') irParaPaginaDigitada()">
+        <button class="btn-page" onclick="irParaPaginaDigitada()">Ir</button>
 
-    <button id="btnNextHist" class="btn-page" onclick="mudarPaginaHist(1)">Próximo</button>
-    <button id="btnLastHist" class="btn-page" onclick="irParaPaginaHist(totalPagHist)" title="Última Página">»</button>
+        <button id="btnNextHist" class="btn-page" onclick="mudarPaginaHist(1)">Próximo</button>
+        <button id="btnLastHist" class="btn-page" onclick="irParaPaginaHist(totalPagHist)" title="Última Página">»</button>
+      </div>
+    </div>
   </div>
-</div>
 
   <!-- SEÇÃO LOGS DE ERRO -->
   <div style="margin-top: 30px; padding-top: 20px; border-top: 2px dashed #e2e8f0;">
     <div class="card-header-flex">
-      <h3 style="color: #2d3748; margin: 0;">⚠️️ Logs de Erros de Validação</h3>
+      <h3 style="color: #2d3748; margin: 0;">⚠ Logs de Erros de Validação</h3>
       <input type="text" id="buscaLogs" class="input-busca" placeholder="🔍 Buscar erro..." oninput="filtrarLogs()">
     </div>
     <div class="table-responsive">
@@ -246,13 +268,10 @@ function mudarPaginaProd(delta) {
 }
 
 // HISTÓRICO
-let pagHist = 1;
-let totalPagHist = 1;
-
 async function carregarHistorico() {
   if (!senhaAdmin && !(await solicitarSenha())) return;
 
-  const busca = document.getElementById('buscaHistorico').value;
+  const busca = document.getElementById('buscaHistorico') ? document.getElementById('buscaHistorico').value : '';
   const res = await fetch(`/api/historico-sns?page=${pagHist}&limit=10&search=${encodeURIComponent(busca)}`, {
     headers: { 'x-admin-password': senhaAdmin }
   });
@@ -284,7 +303,6 @@ function atualizarControlesPaginação() {
   const select = document.getElementById('selectPaginaHist');
   select.innerHTML = '';
 
-  // Preenche o Select com até todas as páginas
   for (let i = 1; i <= totalPagHist; i++) {
     const opt = document.createElement('option');
     opt.value = i;
@@ -330,8 +348,8 @@ function irParaPaginaDigitada() {
 }
 
 function filtrarHistorico() {
-  pagHist = 1; // Reseta para a primeira página ao buscar
-  carregarHistorico();
+  clearTimeout(timerBuscaHist);
+  timerBuscaHist = setTimeout(() => { pagHist = 1; carregarHistorico(); }, 300);
 }
 
 async function exportarCSV() {
