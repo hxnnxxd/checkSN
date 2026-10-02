@@ -78,34 +78,35 @@
     </div>
   </div>
 
-  <!-- SEÇÃO HISTÓRICO -->
-  <div style="margin-top: 30px; padding-top: 20px; border-top: 2px dashed #e2e8f0;">
-    <div class="card-header-flex">
-      <h3 style="color: #2d3748; margin: 0;">📋 Histórico de SNs Validadas</h3>
-      <div class="controls-group">
-        <input type="text" id="buscaHistorico" class="input-busca" placeholder="🔍 Buscar no histórico..." oninput="filtrarHistorico()">
-        <button onclick="exportarCSV()" class="btn-export">📥 Exportar CSV</button>
-      </div>
-    </div>
-    <div class="table-responsive">
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Número de Série (SN)</th>
-            <th>Usuário / E-mail</th>
-            <th>Data da Validação</th>
-          </tr>
-        </thead>
-        <tbody id="tabela-historico-corpo"></tbody>
-      </table>
-    </div>
-    <div class="pagination">
-      <span id="infoPaginaHist"></span>
-      <button id="btnPrevHist" class="btn-page" onclick="mudarPaginaHist(-1)">Anterior</button>
-      <button id="btnNextHist" class="btn-page" onclick="mudarPaginaHist(1)">Próximo</button>
+<!-- SEÇÃO HISTÓRICO -->
+<div style="margin-top: 30px; padding-top: 20px; border-top: 2px dashed #e2e8f0;">
+  <div class="card-header-flex">
+    <h3 style="color: #2d3748; margin: 0;">📋 Histórico de SNs Validadas</h3>
+    <div class="controls-group">
+      <input type="text" id="buscaHistorico" class="input-busca" placeholder="🔍 Buscar no histórico..." oninput="filtrarHistorico()">
+      <button onclick="exportarCSV()" class="btn-export">📥 Exportar CSV</button>
     </div>
   </div>
+  <div class="table-responsive">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Número de Série (SN)</th>
+          <th>Produto</th>
+          <th>Usuário / E-mail</th>
+          <th>Data da Validação</th>
+        </tr>
+      </thead>
+      <tbody id="tabela-historico-corpo"></tbody>
+    </table>
+  </div>
+  <div class="pagination">
+    <span id="infoPaginaHist"></span>
+    <button id="btnPrevHist" class="btn-page" onclick="mudarPaginaHist(-1)">Anterior</button>
+    <button id="btnNextHist" class="btn-page" onclick="mudarPaginaHist(1)">Próximo</button>
+  </div>
+</div>
 
   <!-- SEÇÃO LOGS DE ERRO -->
   <div style="margin-top: 30px; padding-top: 20px; border-top: 2px dashed #e2e8f0;">
@@ -233,10 +234,13 @@ async function carregarHistorico() {
   tbody.innerHTML = '';
 
   (data.dados || []).forEach(item => {
+    const infoProduto = item.nome_modelo ? `<b>${item.produto}</b> <br><small style="color:#718096;">${item.nome_modelo}</small>` : `<b>${item.produto}</b>`;
+    
     tbody.innerHTML += `
       <tr>
         <td>${item.id}</td>
         <td style="font-family: monospace; font-weight: bold;">${item.sn}</td>
+        <td>${infoProduto}</td>
         <td>${item.usuario}</td>
         <td>${item.data}</td>
       </tr>`;

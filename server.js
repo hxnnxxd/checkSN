@@ -234,7 +234,7 @@ app.delete('/api/produtos/:id', verificarSenhaAPI, async (req, res) => {
   }
 });
 
-// HISTÓRICO DE SNS COM BUSCA E PAGINAÇÃO
+// HISTÓRICO DE SNS COM PRODUTO, BUSCA E PAGINAÇÃO
 app.get('/api/historico-sns', verificarSenhaAPI, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -242,18 +242,31 @@ app.get('/api/historico-sns', verificarSenhaAPI, async (req, res) => {
     const search = req.query.search ? `%${req.query.search.trim()}%` : null;
     const offset = (page - 1) * limit;
 
-    let query = "SELECT id, sn, usuario, DATE_FORMAT(data_validacao, '%d/%m/%Y %H:%i:%s') AS data FROM check_sns";
-    let countQuery = "SELECT COUNT(*) as total FROM check_sns";
+    let query = `
+      SELECT 
+        c.id, 
+        c.sn, 
+        c.usuario, 
+        DATE_FORMAT(c.data_validacao, '%d/%m/%Y %H:%i:%s') AS data,
+        COALESCE(p.produto, 'N/A') AS produto,
+        COALESCE(p.nome_modelo, '') AS nome_modelo
+      FROM check_sns c
+      LEFT JOIN produtos p 
+        ON p.download_id = SUBSTRING(c.sn, 3, 5) 
+       AND p.hardware_ns = SUBSTRING(c.sn, 15, 2)
+    `;
+
+    let countQuery = "SELECT COUNT(*) as total FROM check_sns c LEFT JOIN produtos p ON p.download_id = SUBSTRING(c.sn, 3, 5) AND p.hardware_ns = SUBSTRING(c.sn, 15, 2)";
     let params = [];
 
     if (search) {
-      const where = " WHERE sn LIKE ? OR usuario LIKE ?";
+      const where = " WHERE c.sn LIKE ? OR c.usuario LIKE ? OR p.produto LIKE ? OR p.nome_modelo LIKE ?";
       query += where;
       countQuery += where;
-      params = [search, search];
+      params = [search, search, search, search];
     }
 
-    query += " ORDER BY id DESC LIMIT ? OFFSET ?";
+    query += " ORDER BY c.id DESC LIMIT ? OFFSET ?";
 
     const [totalRows] = await pool.query(countQuery, params);
     const [rows] = await pool.query(query, [...params, limit, offset]);
@@ -265,7 +278,39 @@ app.get('/api/historico-sns', verificarSenhaAPI, async (req, res) => {
       totalPaginas: Math.ceil(totalRows[0].total / limit)
     });
   } catch (error) {
+    console.error("Erro ao buscar histórico:", error);
     res.status(500).json({ erro: "Erro ao buscar histórico no banco." });
+  }
+});
+
+// EXPORTAÇÃO CSV DO HISTÓRICO COM PRODUTO
+app.get('/api/historico-sns/exportar', verificarSenhaAPI, async (req, res) => {
+  try {
+    const [rows] = await pool.query(`
+      SELECT 
+        c.id, 
+        c.sn, 
+        c.usuario, 
+        DATE_FORMAT(c.data_validacao, '%d/%m/%Y %H:%i:%s') AS data,
+        COALESCE(p.produto, 'N/A') AS produto,
+        COALESCE(p.nome_modelo, '') AS nome_modelo
+      FROM check_sns c
+      LEFT JOIN produtos p 
+        ON p.download_id = SUBSTRING(c.sn, 3, 5) 
+       AND p.hardware_ns = SUBSTRING(c.sn, 15, 2)
+      ORDER BY c.id DESC
+    `);
+
+    let csv = "ID,SN,Produto,Modelo,Usuario,Data_Validacao\n";
+    rows.forEach(r => {
+      csv += `"${r.id}","${r.sn}","${r.produto}","${r.nome_modelo}","${r.usuario}","${r.data}"\n`;
+    });
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="historico_sns.csv"');
+    res.status(200).send('\uFEFF' + csv);
+  } catch (error) {
+    res.status(500).json({ erro: "Erro ao exportar relatório." });
   }
 });
 

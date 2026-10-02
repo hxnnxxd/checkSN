@@ -5,7 +5,7 @@
   <title>Validação de SN - Controle de Lote</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    /* Botão de Admin no topo direito */
+    /* Botão Admin */
     .btn-admin-topo {
       position: absolute;
       top: 20px;
@@ -29,124 +29,69 @@
     .btn-admin-topo:hover { background-color: #555555; }
     .btn-admin-topo:active { transform: scale(0.97); }
 
-    /* Modais e Lote */
+    /* Layout Geral */
+    .container { max-width: 550px; margin: 40px auto; padding: 20px; }
+
+    /* Modais */
     .modal { 
-      display: none; 
-      position: fixed; 
-      top: 0; 
-      left: 0; 
-      width: 100%; 
-      height: 100%; 
-      background: rgba(0,0,0,0.6); 
-      justify-content: center; 
-      align-items: center; 
-      z-index: 1000;
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+      background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000;
     }
     .modal-content { 
-      background: white; 
-      padding: 25px; 
-      border-radius: 12px; 
-      max-width: 450px; 
-      width: 90%; 
+      background: white; padding: 25px; border-radius: 12px; max-width: 450px; width: 90%; 
       box-shadow: 0 10px 25px rgba(0,0,0,0.15);
     }
-    .opcoes-produto { 
-      display: flex; 
-      flex-direction: column; 
-      gap: 10px; 
-      margin-top: 15px; 
-    }
+    .opcoes-produto { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
     .btn-opcao { 
-      padding: 12px; 
-      background: #2563eb; 
-      color: white; 
-      border: none; 
-      border-radius: 6px; 
-      cursor: pointer; 
-      text-align: left; 
+      padding: 12px; background: #2563eb; color: white; border: none; 
+      border-radius: 6px; cursor: pointer; text-align: left; 
     }
-    .btn-opcao:hover { 
-      background: #1d4ed8; 
-    }
-    .card-lote { 
-      background: #f3f4f6; 
-      padding: 20px; 
-      border-radius: 8px; 
-      margin-bottom: 20px; 
-      border-left: 4px solid #2563eb; 
-    }
-    .campo-grupo {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin-bottom: 15px;
-    }
-    .campo-grupo label {
-      font-weight: bold;
-      color: #374151;
-      font-size: 0.9em;
-    }
-    .btn-modal {
-      padding: 10px 20px;
-      background-color: #2563eb;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .btn-modal:hover {
-      background-color: #1d4ed8;
-    }
-    .btn-modal-cancelar {
-      padding: 10px 20px;
-      background-color: #e5e7eb;
-      color: #374151;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .btn-modal-cancelar:hover {
-      background-color: #d1d5db;
-    }
+    .btn-opcao:hover { background: #1d4ed8; }
 
-    /* Estilo para Botão de Cancelar Lote */
+    /* Cards de Lote */
+    .card-lote { 
+      background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px; 
+      border-left: 4px solid #2563eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .campo-grupo { display: flex; flex-direction: column; gap: 6px; margin-bottom: 15px; }
+    .campo-grupo label { font-weight: bold; color: #374151; font-size: 0.9em; }
+    .btn-modal { padding: 10px 20px; background-color: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; }
+    .btn-modal:hover { background-color: #1d4ed8; }
+    .btn-modal-cancelar { padding: 10px 20px; background-color: #e5e7eb; color: #374151; border: none; border-radius: 6px; cursor: pointer; }
+    .btn-modal-cancelar:hover { background-color: #d1d5db; }
+
     .btn-cancelar-lote {
-      background-color: #dc2626;
-      color: white;
-      font-size: 13px;
-      font-weight: bold;
-      padding: 6px 12px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background 0.2s;
-      margin-top: 10px;
-      width: auto;
+      background-color: #dc2626; color: white; font-size: 13px; font-weight: bold;
+      padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer;
+      transition: background 0.2s; margin-top: 10px; width: auto;
     }
     .btn-cancelar-lote:hover { background-color: #b91c1c; }
 
-    /* Estilos de Mensagem / Retorno */
+    /* MENSAGENS E CARD DE RESULTADO ORGANIZADO */
+    .mensagem { margin-top: 20px; border-radius: 8px; font-size: 14px; text-align: left; }
     .mensagem.sucesso {
-      background-color: #f0fdf4;
-      border: 1px solid #86efac;
-      color: #166534;
-      padding: 15px;
-      border-radius: 8px;
+      background-color: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 18px;
     }
     .mensagem.erro {
-      background-color: #fef2f2;
-      border: 1px solid #fca5a5;
-      color: #991b1b;
-      padding: 15px;
-      border-radius: 8px;
+      background-color: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 15px; font-weight: bold;
     }
-    .grid-produto-detalhes {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 8px;
-      text-align: left;
-      margin-top: 10px;
+
+    .card-resultado-header {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+      font-size: 16px; font-weight: bold; color: #15803d; border-bottom: 1px solid #dcfce7; padding-bottom: 8px;
     }
+    .sn-destaque {
+      background: #dcfce7; padding: 6px 10px; border-radius: 4px; font-family: monospace;
+      font-weight: bold; font-size: 14px; color: #14532d; display: inline-block; margin-bottom: 12px;
+    }
+    .detalhes-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #ffffff;
+      padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; margin-top: 8px;
+    }
+    .detalhe-item { display: flex; flex-direction: column; }
+    .detalhe-item.full { grid-column: span 2; }
+    .detalhe-label { font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: bold; margin-bottom: 2px; }
+    .detalhe-val { font-size: 13px; color: #1e293b; font-weight: 600; word-break: break-word; }
   </style>
 </head>
 <body>
@@ -157,11 +102,11 @@
   </button>
 
   <div class="container">
-    <h2>Check e validação de SN</h2>
+    <h2 style="text-align: center; margin-bottom: 20px;">Check e validação de SN</h2>
 
     <!-- SEÇÃO 1: ABERTURA DE LOTE -->
     <div id="secaoConfigLote" class="card-lote">
-      <h3>Configuração do Lote</h3>
+      <h3 style="margin-top:0;">Configuração do Lote</h3>
       
       <div class="campo-grupo" style="margin-top: 15px;">
         <label for="emailUsuario">E-mail</label>
@@ -173,14 +118,14 @@
           <label for="qtdLote">Quantidade do Lote (mín. 10)</label>
           <input type="number" id="qtdLote" placeholder="10" min="10" value="10" required>
         </div>
-        <button id="btnIniciarLote" onclick="iniciarLote()" style="width: auto; height: 42px;">Iniciar Lote</button>
+        <button id="btnIniciarLote" onclick="iniciarLote()" style="width: auto; height: 42px; padding: 0 20px;">Iniciar Lote</button>
       </div>
     </div>
 
     <!-- SEÇÃO 2: PAINEL DE BIPAGEM -->
     <div id="secaoBipagem" style="display:none;">
-      <div class="card-lote" style="position: relative;">
-        <strong>Lote Ativo:</strong> <span id="infoEmail"></span> | 
+      <div class="card-lote">
+        <strong>Lote Ativo:</strong> <span id="infoEmail"></span><br>
         <strong>Progresso:</strong> <span id="contadorLote">0</span> / <span id="metaLote">0</span><br>
         <strong>Produto Selecionado:</strong> <span id="infoProdutoFixado" style="color: #2563eb;">Aguardando 1ª bipagem...</span>
         <br>
@@ -188,15 +133,17 @@
       </div>
 
       <form id="formSN" onsubmit="event.preventDefault(); submeterValidacao();">
-        <input type="text" id="snInput" placeholder="Bipe a SN (24 caracteres)" autocomplete="off" autofocus required>
-        <button type="submit">Validar SN</button>
+        <div class="campo-grupo">
+          <input type="text" id="snInput" placeholder="Bipe a SN (24 caracteres)" autocomplete="off" autofocus required style="padding: 12px; font-size: 15px;">
+        </div>
+        <button type="submit" style="width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Validar SN</button>
       </form>
     </div>
 
-    <div id="mensagem" class="mensagem" style="margin-top: 15px;"></div>
+    <div id="mensagem" class="mensagem"></div>
   </div>
 
-  <!-- MODAL CUSTOMIZADO PARA PEDIR A SENHA ADMIN -->
+  <!-- MODAL DE SENHA ADMIN -->
   <div id="modalSenhaAdmin" class="modal">
     <div class="modal-content">
       <h3 style="margin-bottom: 10px;">🔐 Acesso Restrito</h3>
@@ -207,23 +154,22 @@
       </div>
       
       <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
-        <button onclick="fecharModalSenha()" class="btn-modal-cancelar" style="margin: 0; font-size: 14px;">Cancelar</button>
-        <button onclick="confirmarSenhaAdmin()" class="btn-modal" style="margin: 0; font-size: 14px;">Entrar</button>
+        <button onclick="fecharModalSenha()" class="btn-modal-cancelar">Cancelar</button>
+        <button onclick="confirmarSenhaAdmin()" class="btn-modal">Entrar</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL DE SELEÇÃO DE PRODUTO DUPLICADO -->
+  <!-- MODAL DE SELEÇÃO DE PRODUTO -->
   <div id="modalSelecao" class="modal">
     <div class="modal-content">
       <h3>Selecione o Produto do Lote</h3>
-      <p id="subtituloModal">Mais de um produto foi encontrado para esta chave. Escolha o produto que este lote irá validar:</p>
+      <p id="subtituloModal" style="color: #666; font-size: 14px; margin-top: 5px;">Mais de um produto foi encontrado para esta chave. Escolha o produto deste lote:</p>
       <div id="listaProdutos" class="opcoes-produto"></div>
     </div>
   </div>
 
   <script>
-    // ESTADO DO LOTE
     let loteAtivo = {
       usuario: '',
       meta: 0,
@@ -232,7 +178,6 @@
       snPendente: ''
     };
 
-    // BIPE DE ÁUDIO (Web Audio API)
     function tocarBipe(sucesso = true) {
       try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -249,23 +194,16 @@
         osc.start();
         osc.stop(audioCtx.currentTime + (sucesso ? 0.15 : 0.3));
       } catch (e) {
-        console.error("Áudio não suportado no navegador", e);
+        console.error("Áudio não suportado", e);
       }
     }
 
-    // GESTÃO DE LOTE
     function iniciarLote() {
       const email = document.getElementById('emailUsuario').value.trim();
       const qtd = parseInt(document.getElementById('qtdLote').value);
 
-      if (!email) {
-        alert("Por favor, digite seu e-mail.");
-        return;
-      }
-      if (!qtd || qtd < 10) {
-        alert("A quantidade mínima do lote deve ser 10.");
-        return;
-      }
+      if (!email) return alert("Por favor, digite seu e-mail.");
+      if (!qtd || qtd < 10) return alert("A quantidade mínima do lote deve ser 10.");
 
       loteAtivo.usuario = email;
       loteAtivo.meta = qtd;
@@ -288,12 +226,12 @@
         loteAtivo = { usuario: '', meta: 0, atual: 0, produtoId: null, snPendente: '' };
         document.getElementById('secaoBipagem').style.display = 'none';
         document.getElementById('secaoConfigLote').style.display = 'block';
+        document.getElementById('mensagem').className = 'mensagem';
         document.getElementById('mensagem').innerHTML = '';
         document.getElementById('snInput').value = '';
       }
     }
 
-    // SUBMIT E VALIDAÇÃO DE SN
     async function submeterValidacao() {
       const inputSn = document.getElementById('snInput');
       const snVal = inputSn.value.trim();
@@ -317,39 +255,39 @@
         if (res.ok && data.sucesso) {
           tocarBipe(true);
 
-          // Fixa o produto no lote se for a primeira validação
           if (!loteAtivo.produtoId) {
             loteAtivo.produtoId = data.produto.id;
             document.getElementById('infoProdutoFixado').innerText = `${data.produto.produto} (${data.produto.nome_modelo || 'S/ Modelo'})`;
           }
 
-          // Incrementa lote
           loteAtivo.atual++;
           document.getElementById('contadorLote').innerText = loteAtivo.atual;
 
           const p = data.produto;
           divMensagem.className = "mensagem sucesso";
           divMensagem.innerHTML = `
-            <h3>✅ SN VALIDADA COM SUCESSO!</h3>
-            <p><b>SN:</b> ${snVal}</p>
-            <hr style="margin: 10px 0; border: 0; border-top: 1px solid #86efac;">
-            <h4>📦 Detalhes do Produto:</h4>
-            <div class="grid-produto-detalhes">
-              <div><b>PRODUTO:</b> ${p.produto}</div>
-              <div><b>DOWNLOAD ID:</b> ${p.download_id}</div>
-              <div><b>HARDWARE NS:</b> ${p.hardware_ns}</div>
-              <div><b>NOME MODELO:</b> ${p.nome_modelo || '-'}</div>
-              <div><b>PRODUCT MODEL:</b> ${p.product_model || '-'}</div>
-              <div><b>PRODUCT NO:</b> ${p.product_no || '-'}</div>
-              <div><b>DESC. PRODUTO:</b> ${p.descricao_produto || '-'}</div>
-              <div><b>DESC. MODELO:</b> ${p.descricao_modelo || '-'}</div>
+            <div class="card-resultado-header">
+              <span>✅</span> SN VALIDADA COM SUCESSO!
+            </div>
+            <div style="font-size: 12px; color: #475569; margin-bottom: 4px;">SÉRIE LIDA:</div>
+            <div class="sn-destaque">${snVal}</div>
+            
+            <div style="font-size: 12px; font-weight: bold; color: #334155; margin-bottom: 6px;">📦 DADOS DO PRODUTO CADASTRADO:</div>
+            <div class="detalhes-grid">
+              <div class="detalhe-item"><span class="detalhe-label">PRODUTO</span><span class="detalhe-val">${p.produto}</span></div>
+              <div class="detalhe-item"><span class="detalhe-label">NOME MODELO</span><span class="detalhe-val">${p.nome_modelo || '-'}</span></div>
+              <div class="detalhe-item"><span class="detalhe-label">DOWNLOAD ID</span><span class="detalhe-val">${p.download_id}</span></div>
+              <div class="detalhe-item"><span class="detalhe-label">HARDWARE NS</span><span class="detalhe-val">${p.hardware_ns}</span></div>
+              <div class="detalhe-item"><span class="detalhe-label">PRODUCT MODEL</span><span class="detalhe-val">${p.product_model || '-'}</span></div>
+              <div class="detalhe-item"><span class="detalhe-label">PRODUCT NO</span><span class="detalhe-val">${p.product_no || '-'}</span></div>
+              <div class="detalhe-item full"><span class="detalhe-label">DESC. PRODUTO</span><span class="detalhe-val">${p.descricao_produto || '-'}</span></div>
+              <div class="detalhe-item full"><span class="detalhe-label">DESC. MODELO</span><span class="detalhe-val">${p.descricao_modelo || '-'}</span></div>
             </div>
           `;
 
           inputSn.value = "";
           inputSn.focus();
 
-          // Verifica término do lote
           if (loteAtivo.atual >= loteAtivo.meta) {
             alert(`🎉 Parabéns! O lote de ${loteAtivo.meta} unidades foi concluído com sucesso!`);
             cancelarLoteAtivo();
@@ -372,7 +310,6 @@
       }
     }
 
-    // MODAL DE MÚLTIPLOS PRODUTOS
     function exibirModalSelecao(produtos) {
       const container = document.getElementById('listaProdutos');
       container.innerHTML = '';
@@ -394,7 +331,6 @@
       submeterValidacao();
     }
 
-    // MONITORA LEITOR DE CÓDIGO DE BARRAS (MODO CONTÍNUO)
     document.getElementById('snInput').addEventListener('input', (e) => {
       const val = e.target.value.trim();
       if (val.length === 24) {
@@ -402,7 +338,6 @@
       }
     });
 
-    // PAINEL ADMIN E MODAL DE SENHA
     function abrirModalSenha() {
       document.getElementById('modalSenhaAdmin').style.display = 'flex';
       document.getElementById('inputSenhaAdmin').focus();
